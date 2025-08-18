@@ -709,7 +709,7 @@ const YaratishScreen = ({ navigateTo, theme }) => {
                         </div>
                     </GlassCard>
                 </div>)} 
-                <button onClick={handleCreate} className="w-full py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-[1.02] active:scale-98" style={{backgroundColor: theme.accent}}>Tayyorlash <ChevronsRight className="ml-2" /></button>
+                <button onClick={handleCreate} className="w-full py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-[1.02] active:scale-98 flex items-center justify-center" style={{backgroundColor: theme.accent}}>Tayyorlash <ChevronsRight className="ml-2" /></button>
             </div>
         </div>
         {isPaymentModalOpen && <PaymentFlowModal theme={theme} onClose={() => setIsPaymentModalOpen(false)} />}
