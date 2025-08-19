@@ -3,6 +3,7 @@ import { ChevronsRight, FileText, User, Search, Plus, ArrowLeft, RefreshCw, Moon
 
 // --- API Configuration ---
 const API_BASE_URL = 'https://api.tm.ismailov.uz';
+const API_BASE_URL_EXTERNAL = 'https://api.tqdm.ismailov.uz'; // New external API base URL
 
 const enhancedFetch = async (url, options = {}) => {
     try {
@@ -135,6 +136,19 @@ const api = {
             xhr.onerror = () => reject(new Error('Tarmoq xatoligi'));
             xhr.send(formData);
         });
+    },
+    searchExternal: async (text, type = null, page = 1, page_size = 10) => {
+        let searchUrl = `${API_BASE_URL_EXTERNAL}/search?text=${text}&page=${page}&page_size=${page_size}`;
+        if (type) {
+            searchUrl += `&type=${type}`;
+        }
+        try {
+            const response = await enhancedFetch(searchUrl);
+            return response;
+        } catch (error) {
+            console.error("External search failed:", error);
+            return []; // Return empty array on error
+        }
     }
 };
 // --- End API Configuration ---
@@ -455,16 +469,131 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [shareModalData, setShareModalData] = useState(null);
-  
-  const filteredDocs = allDocs.filter(doc => doc.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  const [filteredLocalDocs, setFilteredLocalDocs] = useState([]); // State for local filtered docs
+  const [externalDocs, setExternalDocs] = useState([]); // State for external API results
+  const [isExternalSearching, setIsExternalSearching] = useState(false); // Loading state for external search
+
+  useEffect(() => {
+    // Initial filtering of local docs
+    setFilteredLocalDocs(allDocs.filter(doc => doc.title.toLowerCase().includes(searchQuery.toLowerCase())));
+    
+    // Perform external search if query is not empty
+    const fetchExternalDocs = async () => {
+      if (searchQuery.trim() !== '') {
+        setIsExternalSearching(true);
+        try {
+          const results = await api.searchExternal(searchQuery);
+          setExternalDocs(results);
+        } catch (error) {
+          console.error("Error fetching external documents:", error);
+          setExternalDocs([]);
+        } finally {
+          setIsExternalSearching(false);
+        }
+      } else {
+        setExternalDocs([]); // Clear external results if search query is empty
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      fetchExternalDocs();
+    }, 300); // Debounce search to avoid too many API calls
+
+    return () => clearTimeout(debounceTimer);
+
+  }, [searchQuery, allDocs]); // Re-run when searchQuery or allDocs changes
 
   return (
     <div className="animate-fade-in">
-      <header className="flex justify-between items-center mb-6 h-10">{!isSearching ? (<h1 className="text-3xl font-bold animate-fade-in-fast">Hujjatlarim</h1>) : (<input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Qidirish..." className="w-full bg-transparent border-b-2 p-1 focus:outline-none animate-fade-in-fast" style={{borderColor: theme.accent}} autoFocus/>)}
-        <button onClick={() => setIsSearching(!isSearching)} className="p-2 rounded-full" style={{backgroundColor: theme.subtle}}>{isSearching ? <X size={20} /> : <Search size={20} />}</button>
+      <header className="flex justify-between items-center mb-6 h-10">
+        {!isSearching ? (
+          <h1 className="text-3xl font-bold animate-fade-in-fast">Hujjatlarim</h1>
+        ) : (
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Qidirish..."
+            className="w-full bg-transparent border-b-2 p-1 focus:outline-none animate-fade-in-fast"
+            style={{borderColor: theme.accent}}
+            autoFocus
+          />
+        )}
+        <button onClick={() => setIsSearching(!isSearching)} className="p-2 rounded-full" style={{backgroundColor: theme.subtle}}>
+          {isSearching ? <X size={20} /> : <Search size={20} />}
+        </button>
       </header>
-      <div className="space-y-4">
-        {allDocs.length > 0 ? allDocs.map((doc, index) => (
+
+      {searchQuery.trim() !== '' && (
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-3">Hujjatlarim orasida</h2>
+          <div className="space-y-4">
+            {filteredLocalDocs.length > 0 ? (
+              filteredLocalDocs.map((doc, index) => (
+                <GlassCard key={doc.id || `local-${index}`} theme={theme}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-lg">{doc.title}</h3>
+                      <p className="text-sm opacity-70">{doc.date}</p>
+                    </div>
+                    {doc.downloadUrl && (
+                      <div className="flex items-center space-x-2 flex-shrink-0">
+                        <a href={doc.downloadUrl} download target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-white/20" style={{backgroundColor: theme.subtle}}>
+                          <Download size={18} />
+                        </a>
+                        <button onClick={() => setShareModalData({ url: doc.downloadUrl, title: doc.title })} className="p-2 rounded-full hover:bg-white/20" style={{backgroundColor: theme.subtle}}>
+                          <Share2 size={18} />
+                        </button>
+                        <button onClick={() => onDelete(index)} className="p-2 rounded-full hover:bg-red-500/20" style={{backgroundColor: theme.subtle}}>
+                          <Trash2 size={18} className="text-red-500" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </GlassCard>
+              ))
+            ) : (
+              <p className="opacity-70">Mahalliy hujjatlar orasida topilmadi.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {searchQuery.trim() !== '' && (
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-3">Barcha hujjatlar</h2>
+          <div className="space-y-4">
+            {isExternalSearching ? (
+              <div className="flex justify-center items-center py-4">
+                <Loader className="animate-spin" size={24} style={{color: theme.accent}}/>
+                <span className="ml-2 opacity-70">Qidirilmoqda...</span>
+              </div>
+            ) : externalDocs.length > 0 ? (
+              externalDocs.map((doc) => (
+                <GlassCard key={doc.id} theme={theme}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-lg">{doc.text}</h3>
+                      <p className="text-sm opacity-70">Turi: {doc.type}</p>
+                    </div>
+                    <div className="flex items-center space-x-2 flex-shrink-0">
+                      <a href={`https://t.me/taqdimot_robot?start=id_${doc.id}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full hover:bg-white/20" style={{backgroundColor: theme.accent, color: 'white'}}>
+                        <Download size={18} />
+                      </a>
+                    </div>
+                  </div>
+                </GlassCard>
+              ))
+            ) : (
+              <p className="opacity-70">Boshqa hujjatlar orasida topilmadi.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {searchQuery.trim() === '' && allDocs.length > 0 && (
+        <div className="space-y-4">
+          {allDocs.map((doc, index) => (
             <GlassCard key={index} theme={theme}>
                 <div className="flex justify-between items-start">
                     <div>
@@ -486,14 +615,19 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
                     )}
                 </div>
             </GlassCard>
-        )) : (<div className="text-center opacity-60 mt-20">
-                <FileText size={48} className="mx-auto mb-4" />
-                <p>Hali hech qanday hujjat yaratmadingiz.</p>
-                <button onClick={() => navigateTo('yaratish')} className="mt-4 px-4 py-2 rounded-lg text-white" style={{backgroundColor: theme.accent}}>
-                    Birinchisini yaratish
-                </button>
-            </div>)}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {searchQuery.trim() === '' && allDocs.length === 0 && (
+        <div className="text-center opacity-60 mt-20">
+          <FileText size={48} className="mx-auto mb-4" />
+          <p>Hali hech qanday hujjat yaratmadingiz.</p>
+          <button onClick={() => navigateTo('yaratish')} className="mt-4 px-4 py-2 rounded-lg text-white" style={{backgroundColor: theme.accent}}>
+            Birinchisini yaratish
+          </button>
+        </div>
+      )}
       {shareModalData && <ShareModal theme={theme} data={shareModalData} onClose={() => setShareModalData(null)} />}
     </div>
   );
