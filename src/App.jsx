@@ -698,17 +698,12 @@ const YaratishScreen = ({ navigateTo, theme }) => {
                             <img src={`${BASE_TEMPLATE_URL}${templateCategory.toLowerCase()}/${selectedTemplate}.png`} alt={`${selectedTemplate} preview`} className="w-full h-full object-contain transition-all duration-300"/>
                         </div>
                     </GlassCard>
-                    <GlassCard theme={theme} className="overflow-hidden">
+                    <GlassCard theme={theme} className="overflow-hidden min-w-0">
                         <label className="font-semibold mb-3 block px-4">Shablonni tanlang</label>
                         <div className="flex overflow-x-auto space-x-3 pb-2 px-4">
                             {templateData[templateCategory].map(templateName => (
-                                <div key={templateName} className="relative cursor-pointer flex-shrink-0 w-32 h-20" onClick={() => setSelectedTemplate(templateName)}>
-                                    <img
-                                        src={`${BASE_TEMPLATE_URL}${templateCategory.toLowerCase()}/${templateName}.png`}
-                                        alt={templateName}
-                                        className={`w-full h-full object-cover rounded-lg transition-all duration-300 border-4 ${selectedTemplate === templateName ? 'border-opacity-100 scale-105' : 'border-opacity-0'}`}
-                                        style={{borderColor: theme.accent}}
-                                    />
+                                <div key={templateName} className="relative cursor-pointer flex-shrink-0" onClick={() => setSelectedTemplate(templateName)}>
+                                    <img src={`${BASE_TEMPLATE_URL}${templateCategory.toLowerCase()}/${templateName}.png`} alt={templateName} className={`w-32 h-20 object-cover rounded-lg transition-all duration-300 border-4 ${selectedTemplate === templateName ? 'border-opacity-100 scale-105' : 'border-opacity-0'}`} style={{borderColor: theme.accent}}/>
                                 </div>
                             ))}
                         </div>
