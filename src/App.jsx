@@ -432,10 +432,15 @@ const LoginScreen = ({ theme }) => {
 
 const AuroraBackground = () => (
   <div className="fixed inset-0 z-0 overflow-hidden">
+    {/* Mavjud 4 ta sharcha */}
     <div className="absolute top-[-20%] left-[-20%] w-[60vw] h-[60vw] bg-purple-600/30 rounded-full filter blur-3xl animate-blob"></div>
     <div className="absolute top-[10%] right-[-10%] w-[50vw] h-[50vw] bg-blue-500/30 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
     <div className="absolute bottom-[-30%] left-[20%] w-[70vw] h-[70vw] bg-cyan-400/30 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
     <div className="absolute bottom-[-10%] right-[-20%] w-[60vw] h-[60vw] bg-pink-500/30 rounded-full filter blur-3xl animate-blob animation-delay-6000"></div>
+
+    {/* --- YANGI QO'SHILGAN 2 TA SHARCHA --- */}
+    <div className="absolute bottom-[20%] right-[30%] w-[40vw] h-[40vw] bg-green-500/30 rounded-full filter blur-3xl animate-blob animation-delay-8000"></div>
+    <div className="absolute top-[40%] left-[-15%] w-[55vw] h-[55vw] bg-indigo-500/30 rounded-full filter blur-3xl animate-blob animation-delay-10000"></div>
   </div>
 );
 
@@ -1316,6 +1321,9 @@ style.innerHTML = `
   .animation-delay-2000 { animation: blob 10s infinite; animation-delay: -2s; }
   .animation-delay-4000 { animation: blob 10s infinite; animation-delay: -4s; }
   .animation-delay-6000 { animation: blob 10s infinite; animation-delay: -6s; }
+  .animation-delay-8000 { animation: blob 10s infinite; animation-delay: -8s; }
+  .animation-delay-10000 { animation: blob 10s infinite; animation-delay: -10s; }
+
   @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); }}
   .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
   @keyframes fade-in-fast { from { opacity: 0; } to { opacity: 1; }}
