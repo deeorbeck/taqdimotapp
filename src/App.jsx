@@ -372,7 +372,7 @@ function MainApp() {
                     {notification.message}
                 </div>
             )}
-            <div className="relative z-10 h-full flex flex-col">
+            <div className="relative z-10 flex flex-col">
                 {!isLoggedIn ? (
                 <LoginScreen theme={theme} />
                 ) : (
