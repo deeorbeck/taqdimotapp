@@ -671,7 +671,7 @@ const YaratishScreen = ({ navigateTo, theme }) => {
                     <input type="text" placeholder="Guruhi" value={group} onChange={e => setGroup(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent" style={{borderColor: theme.subtle}}/>
                 </GlassCard>
                 }
-                {docType === 'Taqdimot' && (<div className="space-y-6 animate-fade-in">
+                {docType === 'Taqdimot' && (<div className="space-y-6">
                     <GlassCard theme={theme}>
                         <div className="flex justify-between items-center"><label className="font-semibold">Rasmli / Rasmsiz</label><div onClick={() => setWithImages(!withImages)} className={`w-14 h-8 rounded-full p-1 flex items-center cursor-pointer transition-colors duration-300 ${withImages ? '' : 'bg-gray-500'}`} style={{backgroundColor: withImages ? theme.accent : theme.subtle}}><div className={`w-6 h-6 bg-white rounded-full transform transition-transform duration-300 ${withImages ? 'translate-x-6' : ''}`}></div></div></div>
                     </GlassCard>
