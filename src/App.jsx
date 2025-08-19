@@ -530,7 +530,7 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
           <div className="space-y-4">
             {filteredLocalDocs.length > 0 ? (
               filteredLocalDocs.map((doc, index) => (
-                <GlassCard key={doc.id || `local-${index}`} theme={theme}>
+                <GlassCard key={doc.id || `local-${index}`} theme={theme} className={doc.docType === 'Taqdimot' ? 'border-blue-500' : 'border-green-500'}>
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-semibold text-lg">{doc.title}</h3>
@@ -594,7 +594,7 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
       {searchQuery.trim() === '' && allDocs.length > 0 && (
         <div className="space-y-4">
           {allDocs.map((doc, index) => (
-            <GlassCard key={index} theme={theme}>
+            <GlassCard key={index} theme={theme} className={doc.docType === 'Taqdimot' ? 'border-blue-500' : 'border-green-500'}>
                 <div className="flex justify-between items-start">
                     <div>
                         <h3 className="font-semibold text-lg">{doc.title}</h3>
@@ -1141,7 +1141,8 @@ const GenerationStatusScreen = ({ navigateTo, theme, taskInfo, onGenerationSucce
                     setStatusMessage('Fayl muvaffaqiyatli yaratildi!');
                     const downloadUrl = `${API_BASE_URL}/download_file/${statusResponse.file_path}`;
                     
-                    const newDoc = { title: docTitle, date: new Date().toISOString().split('T')[0], downloadUrl: downloadUrl };
+                    const fileType = docType === 'Taqdimot' ? 'pptx' : 'docx'; // Determine fileType
+                    const newDoc = { title: docTitle, date: new Date().toISOString().split('T')[0], downloadUrl: downloadUrl, docType: docType, fileType: fileType }; // Add docType and fileType
                     
                     window.open(downloadUrl, '_blank');
                     
