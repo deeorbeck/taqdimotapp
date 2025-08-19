@@ -541,9 +541,7 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
                         )}
                         <h3 className="font-semibold text-lg">{doc.title}</h3>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${doc.docType === 'Taqdimot' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                        {doc.docType}
-                      </span>
+
                       <p className="text-sm opacity-70 mt-1">{doc.date}</p>
                     </div>
                     {doc.downloadUrl && (
@@ -615,9 +613,7 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
                         )}
                         <h3 className="font-semibold text-lg">{doc.title}</h3>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${doc.docType === 'Taqdimot' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                        {doc.docType}
-                      </span>
+
                       <p className="text-sm opacity-70 mt-1">{doc.date}</p>
                     </div>
                     {doc.downloadUrl && (
