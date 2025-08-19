@@ -521,33 +521,7 @@ const YaratishScreen = ({ navigateTo, theme }) => {
     const topicRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    // --- QUYIDAGI YANGI KOD BLOKINI QO'SHING ---
-    useEffect(() => {
-        // Bu kod sahifa birinchi marta yuklanganda faqat bir marta ishga tushadi.
-        
-        // 1. Maketni (layout) tuzatish uchun vaqtinchalik boshqa kategoriyaga o'tkazamiz.
-        setTemplateCategory('Classic');
-
-        // 2. Keyin esa darhol "Popular" kategoriyasiga qaytarishni rejalashtiramiz.
-        // setTimeout React-ga bu ikki o'zgarishni alohida bajarish kerakligini bildiradi.
-        const timer = setTimeout(() => {
-            setTemplateCategory('Popular');
-        }, 10); // 10 millisoniya kifoya qiladi
-
-        // Komponent sahifadan olib tashlansa, taymerni tozalaymiz
-        return () => clearTimeout(timer);
-
-    }, []); // Bo'sh massiv [] bu kod faqat bir marta ishlashini ta'minlaydi.
-    // --- YANGI KOD BLOKI TUGADI ---
-
-
-    useEffect(() => {
-        // Bu eski useEffect o'zgarishsiz qoladi.
-        // Faqat null'ga tekshirish qo'shib qo'ygan ma'qul, har ehtimolga qarshi.
-        if(templateCategory) {
-            setSelectedTemplate(templateData[templateCategory][0]);
-        }
-    }, [templateCategory]);
+    useEffect(() => { setSelectedTemplate(templateData[templateCategory][0]); }, [templateCategory]);
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
