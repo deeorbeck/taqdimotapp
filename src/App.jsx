@@ -612,7 +612,7 @@ const YaratishScreen = ({ navigateTo, theme }) => {
 
     return (
         <>
-        <div className="animate-slide-in-right">
+        <div className="animate-slide-in-right max-w-2xl mx-auto">
             <header className="flex items-center mb-6"><button onClick={() => navigateTo('hujjatlarim')} className="p-2 mr-4 rounded-full" style={{backgroundColor: theme.subtle}}><ArrowLeft size={20} /></button><h1 className="text-2xl font-bold">Yangi Hujjat Yaratish</h1></header>
             <div className="space-y-6 pb-8">
                 <GlassCard theme={theme}><label className="font-semibold mb-3 block">Hujjat Turi</label><div className="flex rounded-lg p-1" style={{backgroundColor: theme.subtle}}>{['Taqdimot', 'Referat'].map(type => (<button key={type} onClick={() => setDocType(type)} className={`w-1/2 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${docType === type ? 'text-white shadow-md' : 'opacity-70'}`} style={{backgroundColor: docType === type ? theme.accent : 'transparent'}}>{type}</button>))}</div></GlassCard>
