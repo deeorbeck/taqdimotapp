@@ -698,7 +698,7 @@ const YaratishScreen = ({ navigateTo, theme }) => {
                             <img src={`${BASE_TEMPLATE_URL}${templateCategory.toLowerCase()}/${selectedTemplate}.png`} alt={`${selectedTemplate} preview`} className="w-full h-full object-contain transition-all duration-300"/>
                         </div>
                     </GlassCard>
-                    <GlassCard theme={theme}>
+                    <GlassCard theme={theme} className="overflow-hidden">
                         <label className="font-semibold mb-3 block">Shablonni tanlang</label>
                         <div className="flex overflow-x-auto space-x-3 pb-2 -mx-4 px-4">
                             {templateData[templateCategory].map(templateName => (
