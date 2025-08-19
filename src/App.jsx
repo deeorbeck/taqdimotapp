@@ -372,7 +372,7 @@ function MainApp() {
                     {notification.message}
                 </div>
             )}
-            <div className="relative z-10 flex flex-col">
+            <div className="relative z-10 h-full flex flex-col">
                 {!isLoggedIn ? (
                 <LoginScreen theme={theme} />
                 ) : (
@@ -1312,10 +1312,10 @@ const PaymentFlowModal = ({ theme, onClose }) => {
 const style = document.createElement('style');
 style.innerHTML = `
   @keyframes blob {0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); }}
-  .animate-blob { animation: blob 15s infinite; }
-  .animation-delay-2000 { animation: blob 15s infinite; animation-delay: -2s; }
-  .animation-delay-4000 { animation: blob 15s infinite; animation-delay: -4s; }
-  .animation-delay-6000 { animation: blob 15s infinite; animation-delay: -6s; }
+  .animate-blob { animation: blob 12s infinite; }
+  .animation-delay-2000 { animation: blob 12s infinite; animation-delay: -2s; }
+  .animation-delay-4000 { animation: blob 12s infinite; animation-delay: -4s; }
+  .animation-delay-6000 { animation: blob 12s infinite; animation-delay: -6s; }
   @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); }}
   .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
   @keyframes fade-in-fast { from { opacity: 0; } to { opacity: 1; }}
