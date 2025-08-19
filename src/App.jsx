@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
-import { ChevronsRight, FileText, User, Search, Plus, ArrowLeft, RefreshCw, Moon, Sun, X, CheckCircle, Edit2, ChevronDown, Loader, UploadCloud, File as FileIcon, Trash2, Download, Share2, XCircle, Copy } from 'lucide-react';
+import { ChevronsRight, FileText, User, Search, Plus, ArrowLeft, RefreshCw, Moon, Sun, X, CheckCircle, Edit2, ChevronDown, Loader, UploadCloud, File as FileIcon, Trash2, Download, Share2, XCircle, Copy, Presentation, Scroll } from 'lucide-react';
 
 // --- API Configuration ---
 const API_BASE_URL = 'https://api.tm.ismailov.uz';
@@ -530,11 +530,21 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
           <div className="space-y-4">
             {filteredLocalDocs.length > 0 ? (
               filteredLocalDocs.map((doc, index) => (
-                <GlassCard key={doc.id || `local-${index}`} theme={theme} className={doc.docType === 'Taqdimot' ? 'border-blue-500' : 'border-green-500'}>
+                <GlassCard key={doc.id || `local-${index}`} theme={theme}> {/* Remove border classes from GlassCard itself */}
                   <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-lg">{doc.title}</h3>
-                      <p className="text-sm opacity-70">{doc.date}</p>
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-2">
+                        {doc.docType === 'Taqdimot' ? (
+                          <Presentation size={20} className="mr-2 text-blue-600" />
+                        ) : (
+                          <Scroll size={20} className="mr-2 text-green-600" />
+                        )}
+                        <h3 className="font-semibold text-lg">{doc.title}</h3>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${doc.docType === 'Taqdimot' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                        {doc.docType}
+                      </span>
+                      <p className="text-sm opacity-70 mt-1">{doc.date}</p>
                     </div>
                     {doc.downloadUrl && (
                       <div className="flex items-center space-x-2 flex-shrink-0">
