@@ -454,7 +454,7 @@ const LoginScreen = ({ theme }) => {
     return (
         <div className="w-full h-screen flex items-center justify-center p-4 animate-fade-in">
             <GlassCard theme={theme} className="w-full max-w-sm text-center">
-                <img src="/images/avatar.jpg" alt="App Logo" className="w-24 h-24 rounded-full mx-auto mb-4 border-4" style={{borderColor: theme.accent}}/>
+                <img src="/images/logo.png" alt="App Logo" className="w-24 h-24 rounded-full mx-auto mb-4 border-4" style={{borderColor: theme.accent}}/>
                 <h1 className="text-2xl font-bold mb-2" style={{color: theme.accent}}>Taqdimot App</h1>
                 <p className="mb-6 opacity-80">Maxsus kod olib ilovaga kirishingiz mumkin.</p>
                 <a href="https://t.me/taqdimot_robot?start=code" target="_blank" rel="noopener noreferrer" className="text-lg font-semibold" style={{color: theme.accent}}>Kodni olish</a>
@@ -1239,7 +1239,7 @@ const ProfilScreen = ({ navigateTo, theme, isDarkMode, setIsDarkMode, handleLogo
   const { showNotification } = useNotification();
   const [name, setName] = useState(user?.full_name || '');
   const [isEditingName, setIsEditingName] = useState(false);
-  const [avatar, setAvatar] = useState(localStorage.getItem('userAvatar') || "/images/avatar.jpg");
+  const [avatar, setAvatar] = useState(localStorage.getItem('userAvatar') || "/images/logo.png");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const fileInputRef = React.useRef(null);
   
