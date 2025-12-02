@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
-import { ChevronsRight, FileText, User, Search, Plus, ArrowLeft, RefreshCw, Moon, Sun, X, CheckCircle, Edit2, ChevronDown, Loader, UploadCloud, File as FileIcon, Trash2, Download, Share2, XCircle, Copy, Presentation, Scroll } from 'lucide-react';
+import { ChevronsRight, FileText, User, Search, Plus, ArrowLeft, RefreshCw, Moon, Sun, X, CheckCircle, Edit2, ChevronDown, Loader, UploadCloud, File as FileIcon, Trash2, Download, Share2, XCircle, Copy, Presentation, Scroll, ClipboardList, Grid3x3 } from 'lucide-react';
 
 // --- API Configuration ---
-const API_BASE_URL = 'https://api.tm.ismailov.uz';
+const API_BASE_URL = 'https://api.tm.ismailov.uz'; // ✅ Production URL
 const API_BASE_URL_EXTERNAL = 'https://api.tqdm.ismailov.uz'; // New external API base URL
 
 const enhancedFetch = async (url, options = {}) => {
@@ -21,8 +21,16 @@ const enhancedFetch = async (url, options = {}) => {
             const errorText = await response.text();
             try {
                 const errorJson = JSON.parse(errorText);
+                // ✅ Balans xatosini aniqlash
+                if (response.status === 402) {
+                    throw new Error(errorJson.detail || 'Balans yetarli emas');
+                }
                 throw new Error(errorJson.detail || `Server xatosi: ${response.status}`);
             } catch (e) {
+                // ✅ Agar JSON parse qila olmasa, lekin 402 status bo'lsa
+                if (response.status === 402) {
+                    throw new Error(errorText || 'Balans yetarli emas');
+                }
                 console.error("Serverdan kutilmagan javob:", errorText);
                 throw new Error(`Serverdan kutilmagan javob keldi (status: ${response.status})`);
             }
@@ -36,6 +44,47 @@ const enhancedFetch = async (url, options = {}) => {
             throw new Error('Serverga ulanib bo\'lmadi. Internet aloqasini yoki server holatini tekshiring.');
         }
         throw error;
+    }
+};
+
+// Image cache utilities
+const imageCache = {
+    save: (topic, images) => {
+        const cacheKey = `images_${topic.toLowerCase().trim()}`;
+        const cacheData = {
+            images: images,
+            timestamp: Date.now(),
+            topic: topic
+        };
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+        console.log(`✅ Cached ${images.length} images for topic: ${topic}`);
+    },
+    
+    get: (topic) => {
+        const cacheKey = `images_${topic.toLowerCase().trim()}`;
+        const cached = localStorage.getItem(cacheKey);
+        
+        if (!cached) return null;
+        
+        const data = JSON.parse(cached);
+        
+        // Check if cache is not too old (7 days)
+        const age = Date.now() - data.timestamp;
+        const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+        
+        if (age > MAX_AGE) {
+            console.log(`⚠️ Cache too old for topic: ${topic}`);
+            localStorage.removeItem(cacheKey);
+            return null;
+        }
+        
+        console.log(`✅ Using cached images for topic: ${topic} (${data.images.length} available)`);
+        return data.images;
+    },
+    
+    clear: (topic) => {
+        const cacheKey = `images_${topic.toLowerCase().trim()}`;
+        localStorage.removeItem(cacheKey);
     }
 };
 
@@ -96,7 +145,25 @@ const api = {
         });
     },
     generateContent: async (data) => {
-        return enhancedFetch(`${API_BASE_URL}/generate_content`, {
+        return enhancedFetch(`${API_BASE_URL}/generate_presentation`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+    generateDocument: async (data) => {
+        return enhancedFetch(`${API_BASE_URL}/generate_document`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+    generateTest: async (data) => {
+        return enhancedFetch(`${API_BASE_URL}/generate_test`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+    generateCrossword: async (data) => {
+        return enhancedFetch(`${API_BASE_URL}/generate_crossword`, {
             method: 'POST',
             body: JSON.stringify(data),
         });
@@ -166,6 +233,7 @@ const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const hasCheckedTokenRef = useRef(false); // ✅ Track if token already checked
 
     const logout = () => {
         console.log("[LOG: Auth] Tizimdan chiqilmoqda...");
@@ -192,6 +260,14 @@ const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        // ✅ Prevent duplicate token check in React.StrictMode
+        if (hasCheckedTokenRef.current) {
+            console.log("[LOG: Auth] Token already checked, skipping...");
+            return;
+        }
+        
+        hasCheckedTokenRef.current = true;
+        
         const checkToken = async () => {
             console.log("[LOG: Auth] Token tekshirilmoqda...");
             const savedToken = localStorage.getItem('authToken');
@@ -261,7 +337,17 @@ const FullScreenLoader = ({ theme }) => (
 // Asosiy ilova komponenti
 
 export default function App() {
+  const hasLoadedGARef = React.useRef(false); // ✅ Track if GA loaded
+  
   React.useEffect(() => {
+    // ✅ Prevent duplicate GA script loading
+    if (hasLoadedGARef.current) {
+      console.log("[LOG] Google Analytics already loaded, skipping...");
+      return;
+    }
+    
+    hasLoadedGARef.current = true;
+    
     // Load the Google Analytics script
     const script1 = document.createElement('script');
     script1.async = true;
@@ -279,8 +365,9 @@ export default function App() {
     document.head.appendChild(script2);
 
     return () => {
-      document.head.removeChild(script1);
-      document.head.removeChild(script2);
+      // Cleanup only if component unmounts
+      if (document.head.contains(script1)) document.head.removeChild(script1);
+      if (document.head.contains(script2)) document.head.removeChild(script2);
     };
   }, []);
 
@@ -342,11 +429,25 @@ function MainApp() {
       setNotification({ message, type, key: new Date().getTime() });
   };
 
-  const handleGenerationSuccess = (newDoc) => {
+  const handleGenerationSuccess = React.useCallback((newDoc) => {
       console.log("[LOG: MainApp] Generatsiya muvaffaqiyatli yakunlandi. Hujjatlar ro'yxati yangilanmoqda va sahifa o'zgartirilmoqda:", newDoc);
-      setAllDocs(prevDocs => [newDoc, ...prevDocs]);
+      setAllDocs(prevDocs => {
+          // ✅ Prevent duplicate documents with same title and date
+          const isDuplicate = prevDocs.some(doc => 
+              doc.title === newDoc.title && 
+              doc.date === newDoc.date && 
+              doc.downloadUrl === newDoc.downloadUrl
+          );
+          
+          if (isDuplicate) {
+              console.log("[LOG: MainApp] Dublikat hujjat topildi, qo'shilmaydi");
+              return prevDocs;
+          }
+          
+          return [newDoc, ...prevDocs];
+      });
       setActiveScreen('hujjatlarim');
-  };
+  }, []);
   
   const handleDeleteDocument = (docIndexToDelete) => {
     console.log(`[LOG: MainApp] ${docIndexToDelete}-indeksdagi hujjat o'chirilmoqda.`);
@@ -560,6 +661,10 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
                       <div className="flex items-center mb-2">
                         {doc.docType === 'Taqdimot' ? (
                           <Presentation size={20} className="mr-2 text-blue-600" />
+                        ) : doc.docType === 'Test' ? (
+                          <ClipboardList size={20} className="mr-2 text-orange-600" />
+                        ) : doc.docType === 'Krossword' ? (
+                          <Grid3x3 size={20} className="mr-2 text-purple-600" />
                         ) : (
                           <Scroll size={20} className="mr-2 text-green-600" />
                         )}
@@ -626,12 +731,21 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
       {searchQuery.trim() === '' && allDocs.length > 0 && (
         <div className="space-y-4">
           {allDocs.map((doc, index) => (
-            <GlassCard key={index} theme={theme} className={doc.docType === 'Taqdimot' ? 'border-blue-500' : 'border-green-500'}>
+            <GlassCard key={index} theme={theme} className={
+              doc.docType === 'Taqdimot' ? 'border-blue-500' : 
+              doc.docType === 'Test' ? 'border-orange-500' :
+              doc.docType === 'Krossword' ? 'border-purple-500' :
+              'border-green-500'
+            }>
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col">
                       <div className="flex items-center mb-2">
                         {doc.docType === 'Taqdimot' ? (
                           <Presentation size={20} className="mr-2 text-blue-600" />
+                        ) : doc.docType === 'Test' ? (
+                          <ClipboardList size={20} className="mr-2 text-orange-600" />
+                        ) : doc.docType === 'Krossword' ? (
+                          <Grid3x3 size={20} className="mr-2 text-purple-600" />
                         ) : (
                           <Scroll size={20} className="mr-2 text-green-600" />
                         )}
@@ -686,7 +800,7 @@ const YaratishScreen = ({ navigateTo, theme }) => {
     const [direction, setDirection] = useState('');
     const [group, setGroup] = useState('');
     const [withImages, setWithImages] = useState(true);
-    const [slideCount, setSlideCount] = useState(8);
+    const [slideCount, setSlideCount] = useState(10);
     const [templateCategory, setTemplateCategory] = useState('Popular');
     const [selectedTemplate, setSelectedTemplate] = useState('slice');
     const [errors, setErrors] = useState({});
@@ -695,6 +809,15 @@ const YaratishScreen = ({ navigateTo, theme }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [sourceFilePath, setSourceFilePath] = useState(null);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    
+    // Test va Krossword uchun
+    const [questionCount, setQuestionCount] = useState(20);
+    const [wordCount, setWordCount] = useState(15);
+    const [difficulty, setDifficulty] = useState('Medium');
+    
+    // Referat uchun qo'shimcha
+    const [acceptedBy, setAcceptedBy] = useState('');
+    const targetPages = 15; // ✅ Fixed qiymat - o'zgartirilmaydi
 
     const fullNameRef = useRef(null);
     const topicRef = useRef(null);
@@ -705,6 +828,12 @@ const YaratishScreen = ({ navigateTo, theme }) => {
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
+        
+        // ✅ Prevent duplicate uploads
+        if (isUploading) {
+            console.log("[LOG: YaratishScreen] Fayl allaqachon yuklanmoqda.");
+            return;
+        }
 
         if (file.type !== "application/pdf") {
             showNotification("Xatolik: Faqat PDF (.pdf) formatidagi fayllarni yuklash mumkin.", 'error');
@@ -743,6 +872,20 @@ const YaratishScreen = ({ navigateTo, theme }) => {
         if (docType === 'Taqdimot' && (!slideCount || slideCount < 6 || slideCount > 20)) {
             newErrors.slideCount = "Slaydlar soni 6 va 20 orasida bo'lishi kerak.";
         }
+        
+        if (docType === 'Test' && (!questionCount || questionCount < 10 || questionCount > 50)) {
+            newErrors.questionCount = "Savollar soni 10 va 50 orasida bo'lishi kerak.";
+        }
+        
+        if (docType === 'Krossword' && (!wordCount || wordCount < 5 || wordCount > 30)) {
+            newErrors.wordCount = "So'zlar soni 5 va 30 orasida bo'lishi kerak.";
+        }
+        
+        // ✅ Sahifalar soni fixed, validatsiya kerak emas
+        // if (docType === 'Referat' && (!targetPages || targetPages < 10 || targetPages > 50)) {
+        //     newErrors.targetPages = "Sahifalar soni 10 va 50 orasida bo'lishi kerak.";
+        // }
+        
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -753,16 +896,19 @@ const YaratishScreen = ({ navigateTo, theme }) => {
             return;
         }
 
-        let finalWithImages = withImages;
-        let finalSlideCount = slideCount;
         let requiredBalance;
 
         if (docType === 'Referat') {
-            finalWithImages = false;
-            finalSlideCount = 20; // Yangi hujjatga ko'ra 20
             requiredBalance = user.price_abstract;
+        } else if (docType === 'Test') {
+            requiredBalance = user.price_test_question * questionCount;
+            if (sourceFilePath) requiredBalance += user.price_with_source;
+        } else if (docType === 'Krossword') {
+            requiredBalance = user.price_crossword_word * wordCount;
+            if (sourceFilePath) requiredBalance += user.price_with_source;
         } else {
             requiredBalance = withImages ? user.price_presentation_with_images : user.price_presentation;
+            if (sourceFilePath) requiredBalance += user.price_with_source;
         }
         
         if (user.balance < requiredBalance) {
@@ -771,7 +917,26 @@ const YaratishScreen = ({ navigateTo, theme }) => {
             return;
         }
 
-        navigateTo('muharrir', { fullName, topic, docType, lang, withImages: finalWithImages, slideCount: finalSlideCount, selectedTemplate, templateCategory, university, faculty, direction, group, sourceFilePath });
+        navigateTo('muharrir', { 
+            fullName, 
+            topic, 
+            docType, 
+            lang, 
+            withImages, 
+            slideCount, 
+            selectedTemplate, 
+            templateCategory, 
+            university, 
+            faculty, 
+            direction, 
+            group, 
+            sourceFilePath,
+            questionCount,
+            wordCount,
+            difficulty,
+            acceptedBy,
+            targetPages
+        });
     };
     
     const handleSlideCountChange = (e) => {
@@ -794,7 +959,7 @@ const YaratishScreen = ({ navigateTo, theme }) => {
         <div className="animate-slide-in-right max-w-2xl mx-auto">
             <header className="flex items-center mb-6"><button onClick={() => navigateTo('hujjatlarim')} className="p-2 mr-4 rounded-full" style={{backgroundColor: theme.subtle}}><ArrowLeft size={20} /></button><h1 className="text-2xl font-bold">Yangi Hujjat Yaratish</h1></header>
             <div className="space-y-6 pb-8">
-                <GlassCard theme={theme}><label className="font-semibold mb-3 block">Hujjat Turi</label><div className="flex rounded-lg p-1" style={{backgroundColor: theme.subtle}}>{['Taqdimot', 'Referat'].map(type => (<button key={type} onClick={() => setDocType(type)} className={`w-1/2 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${docType === type ? 'text-white shadow-md' : 'opacity-70'}`} style={{backgroundColor: docType === type ? theme.accent : 'transparent'}}>{type}</button>))}</div></GlassCard>
+                <GlassCard theme={theme}><label className="font-semibold mb-3 block">Hujjat Turi</label><div className="grid grid-cols-2 gap-2 rounded-lg p-1" style={{backgroundColor: theme.subtle}}>{['Taqdimot', 'Referat', 'Test', 'Krossword'].map(type => (<button key={type} onClick={() => setDocType(type)} className={`py-2 rounded-md text-sm font-medium transition-colors duration-300 ${docType === type ? 'text-white shadow-md' : 'opacity-70'}`} style={{backgroundColor: docType === type ? theme.accent : 'transparent'}}>{type}</button>))}</div></GlassCard>
                 <GlassCard theme={theme}>
                     <label className="font-semibold mb-2 block">Asosiy Ma'lumotlar</label>
                     <input ref={fullNameRef} type="text" placeholder="To'liq ism-familiya" value={fullName} onChange={e => setFullName(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent mb-3 transition-colors" style={{borderColor: errors.fullName ? '#EF4444' : theme.subtle}}/>
@@ -850,6 +1015,81 @@ const YaratishScreen = ({ navigateTo, theme }) => {
                     <input type="text" placeholder="Guruhi" value={group} onChange={e => setGroup(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent" style={{borderColor: theme.subtle}}/>
                 </GlassCard>
                 }
+                {docType === 'Referat' && (
+                    <div className="space-y-6">
+                        {/* ✅ Sahifalar soni berkitildi - input olib tashlandi */}
+                        {/* <GlassCard theme={theme}>
+                            <label className="font-semibold mb-2 block">Sahifalar Soni (10-50)</label>
+                            <input 
+                                type="number" 
+                                value={targetPages} 
+                                onChange={(e) => setTargetPages(e.target.value ? parseInt(e.target.value) : '')}
+                                min="10"
+                                max="50"
+                                className="w-full p-3 rounded-lg border bg-transparent transition-colors"
+                                style={{borderColor: errors.targetPages ? '#EF4444' : theme.subtle}}
+                            />
+                            {errors.targetPages && <p className="text-red-500 text-sm mt-2">{errors.targetPages}</p>}
+                        </GlassCard> */}
+                        <GlassCard theme={theme}>
+                            <label className="font-semibold mb-2 block">Ta'lim muassasasi (Ixtiyoriy)</label>
+                            <input type="text" placeholder="Universitet nomi" value={university} onChange={e => setUniversity(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent mb-3" style={{borderColor: theme.subtle}}/>
+                            <input type="text" placeholder="Fakulteti" value={faculty} onChange={e => setFaculty(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent mb-3" style={{borderColor: theme.subtle}}/>
+                            <input type="text" placeholder="Yo'nalishi" value={direction} onChange={e => setDirection(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent mb-3" style={{borderColor: theme.subtle}}/>
+                            <input type="text" placeholder="Guruhi" value={group} onChange={e => setGroup(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent" style={{borderColor: theme.subtle}}/>
+                        </GlassCard>
+                        <GlassCard theme={theme}>
+                            <label className="font-semibold mb-2 block">Qabul qildi (Ixtiyoriy)</label>
+                            <input type="text" placeholder="Prof. Karimov A.B." value={acceptedBy} onChange={e => setAcceptedBy(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent" style={{borderColor: theme.subtle}}/>
+                        </GlassCard>
+                    </div>
+                )}
+                {docType === 'Test' && (
+                    <div className="space-y-6">
+                        <GlassCard theme={theme}>
+                            <label className="font-semibold mb-2 block">Savollar Soni (10-50)</label>
+                            <input 
+                                type="number" 
+                                value={questionCount} 
+                                onChange={(e) => setQuestionCount(e.target.value ? parseInt(e.target.value) : '')}
+                                className="w-full p-3 rounded-lg border bg-transparent transition-colors"
+                                style={{borderColor: errors.questionCount ? '#EF4444' : theme.subtle}}
+                            />
+                            {errors.questionCount && <p className="text-red-500 text-sm mt-2">{errors.questionCount}</p>}
+                        </GlassCard>
+                        <GlassCard theme={theme}>
+                            <label className="font-semibold mb-3 block">Qiyinlik Darajasi</label>
+                            <select value={difficulty} onChange={e => setDifficulty(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent" style={{borderColor: theme.subtle, color: theme.text, backgroundColor: theme.bg}}>
+                                <option value="Easy">Oson (Easy)</option>
+                                <option value="Medium">O'rtacha (Medium)</option>
+                                <option value="Hard">Qiyin (Hard)</option>
+                            </select>
+                        </GlassCard>
+                    </div>
+                )}
+                {docType === 'Krossword' && (
+                    <div className="space-y-6">
+                        <GlassCard theme={theme}>
+                            <label className="font-semibold mb-2 block">So'zlar Soni (5-30)</label>
+                            <input 
+                                type="number" 
+                                value={wordCount} 
+                                onChange={(e) => setWordCount(e.target.value ? parseInt(e.target.value) : '')}
+                                className="w-full p-3 rounded-lg border bg-transparent transition-colors"
+                                style={{borderColor: errors.wordCount ? '#EF4444' : theme.subtle}}
+                            />
+                            {errors.wordCount && <p className="text-red-500 text-sm mt-2">{errors.wordCount}</p>}
+                        </GlassCard>
+                        <GlassCard theme={theme}>
+                            <label className="font-semibold mb-3 block">Qiyinlik Darajasi</label>
+                            <select value={difficulty} onChange={e => setDifficulty(e.target.value)} className="w-full p-3 rounded-lg border bg-transparent" style={{borderColor: theme.subtle, color: theme.text, backgroundColor: theme.bg}}>
+                                <option value="Easy">Oson (Easy)</option>
+                                <option value="Medium">O'rtacha (Medium)</option>
+                                <option value="Hard">Qiyin (Hard)</option>
+                            </select>
+                        </GlassCard>
+                    </div>
+                )}
                 {docType === 'Taqdimot' && (<div className="space-y-6">
                     <GlassCard theme={theme}>
                         <div className="flex justify-between items-center"><label className="font-semibold">Rasmli / Rasmsiz</label><div onClick={() => setWithImages(!withImages)} className={`w-14 h-8 rounded-full p-1 flex items-center cursor-pointer transition-colors duration-300 ${withImages ? '' : 'bg-gray-500'}`} style={{backgroundColor: withImages ? theme.accent : theme.subtle}}><div className={`w-6 h-6 bg-white rounded-full transform transition-transform duration-300 ${withImages ? 'translate-x-6' : ''}`}></div></div></div>
@@ -909,46 +1149,156 @@ const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
     const [regenerating, setRegenerating] = useState({ slide: null, item: null, type: null });
     const localImageInputRef = useRef(null);
     const [currentSlideForImageUpload, setCurrentSlideForImageUpload] = useState(null);
-
+    const hasGeneratedRef = useRef(false); // ✅ Track if already generated
 
     useEffect(() => {
+        // ✅ Prevent duplicate calls in React.StrictMode
+        if (hasGeneratedRef.current) {
+            console.log("[LOG] Generation already in progress or completed, skipping...");
+            return;
+        }
+        
+        hasGeneratedRef.current = true;
+        
         const generate = async () => {
             setIsLoading(true);
+            console.log(`[LOG] Starting generation for ${settings.docType}: ${settings.topic}`);
             try {
-                const requestData = {
-                    token: token,
-                    topic: settings.topic,
-                    lang: settings.lang || 'uz',
-                    slides_count: settings.slideCount,
-                    with_image: settings.withImages,
-                    sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
-                };
-                const response = await api.generateContent(requestData);
-                setGeneratedContentData(response); 
+                let response;
                 
-                const slidesForEditing = response.slides.map(slide => ({
-                    ...slide,
-                    content: [...slide.content] 
-                }));
-                
-                const finalSlides = [
-                    { type: 'title', content: { title: settings.topic, author: settings.fullName, institution: [settings.university, settings.faculty, settings.direction, settings.group].filter(Boolean).join(', ') } },
-                    { type: 'plan', content: { title: 'Reja:', items: response.plans } },
-                    ...slidesForEditing.map(s => ({ type: 'content', content: s })),
-                ];
+                if (settings.docType === 'Taqdimot') {
+                    const requestData = {
+                        token: token,
+                        topic: settings.topic,
+                        lang: settings.lang || 'uz',
+                        slides_count: settings.slideCount,
+                        with_image: settings.withImages,
+                        sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
+                    };
+                    response = await api.generateContent(requestData);
+                    setGeneratedContentData(response); 
+                    
+                    // ✅ YANGI: Image pool'ni cache qilish
+                    if (response.image_pool && response.image_pool.length > 0) {
+                        imageCache.save(settings.topic, response.image_pool);
+                    }
+                    
+                    const slidesForEditing = response.slides.map(slide => ({
+                        ...slide,
+                        content: [...slide.content] 
+                    }));
+                    
+                    const finalSlides = [
+                        { type: 'title', content: { title: settings.topic, author: settings.fullName, institution: [settings.university, settings.faculty, settings.direction, settings.group].filter(Boolean).join(', ') } },
+                        { type: 'plan', content: { title: 'Reja:', items: response.plans } },
+                        ...slidesForEditing.map(s => ({ type: 'content', content: s })),
+                    ];
 
-                setEditableSlides(finalSlides);
+                    setEditableSlides(finalSlides);
+                } else if (settings.docType === 'Referat') {
+                    const requestData = {
+                        token: token,
+                        topic: settings.topic,
+                        lang: settings.lang || 'uz',
+                        doc_type: 'abstract',
+                        target_pages: settings.targetPages || 15,  // ✅ YANGI: User tomonidan belgilangan sahifalar soni
+                        sources: settings.sourceFilePath ? [settings.sourceFilePath] : [],
+                        // ✅ YANGI: University ma'lumotlari
+                        full_name: settings.fullName,
+                        institution_info: {
+                            university: settings.university || '',
+                            faculty: settings.faculty || '',
+                            direction: settings.direction || '',
+                            group: settings.group || ''
+                        },
+                        accepted_by: settings.acceptedBy || ''
+                    };
+                    response = await api.generateDocument(requestData);
+                    setGeneratedContentData(response);
+                    
+                    const sectionsForEditing = response.sections.map(section => ({
+                        ...section,
+                        content: [...section.content]
+                    }));
+                    
+                    const finalSlides = [
+                        { type: 'title', content: { title: settings.topic, author: settings.fullName, institution: [settings.university, settings.faculty, settings.direction, settings.group].filter(Boolean).join(', ') } },
+                        { type: 'plan', content: { title: 'Reja:', items: response.plans } },
+                        ...sectionsForEditing.map(s => ({ type: 'content', content: s })),
+                    ];
+
+                    setEditableSlides(finalSlides);
+                } else if (settings.docType === 'Test') {
+                    const requestData = {
+                        token: token,
+                        topic: settings.topic,
+                        lang: settings.lang || 'uz',
+                        difficulty: settings.difficulty || 'Medium',
+                        question_count: settings.questionCount,
+                        sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
+                    };
+                    response = await api.generateTest(requestData);
+                    setGeneratedContentData(response);
+                    
+                    const finalSlides = [
+                        { type: 'test', content: response }
+                    ];
+
+                    setEditableSlides(finalSlides);
+                } else if (settings.docType === 'Krossword') {
+                    const requestData = {
+                        token: token,
+                        topic: settings.topic,
+                        lang: settings.lang || 'uz',
+                        difficulty: settings.difficulty || 'Medium',
+                        word_count: settings.wordCount,
+                        sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
+                    };
+                    response = await api.generateCrossword(requestData);
+                    setGeneratedContentData(response);
+                    
+                    const finalSlides = [
+                        { type: 'crossword', content: response }
+                    ];
+
+                    setEditableSlides(finalSlides);
+                }
 
             } catch (error) {
                 console.error("Content generation failed:", error);
-                showNotification(`Kontent yaratishda xatolik: ${error.message}`, 'error');
+                
+                // ✅ Backend error message'ni ko'rsatish
+                let errorMessage = error.message;
+                
+                // ✅ JSON formatdagi xabarni parse qilish
+                try {
+                    // Agar xabar JSON format bo'lsa (masalan: {"detail":"..."})
+                    const jsonMatch = errorMessage.match(/\{.*"detail".*:.*"(.+?)"\}/);
+                    if (jsonMatch && jsonMatch[1]) {
+                        errorMessage = jsonMatch[1];
+                    }
+                } catch (e) {
+                    // JSON parse qila olmasa, asl xabarni ishlatamiz
+                }
+                
+                // ✅ Balans yetarli emas xatoligini aniqlash
+                if (errorMessage.includes('Insufficient balance') || 
+                    errorMessage.includes('Balansingiz yetarli emas') || 
+                    errorMessage.includes('402')) {
+                    showNotification(`❌ ${errorMessage}`, 'error');
+                } else {
+                    showNotification(`Kontent yaratishda xatolik: ${errorMessage}`, 'error');
+                }
+                
                 navigateTo('yaratish');
             } finally {
                 setIsLoading(false);
             }
         };
         generate();
-    }, [settings, user, token, navigateTo, showNotification]);
+        
+        // ✅ NO cleanup needed - we want to prevent duplicate calls even after remount
+    }, [settings.topic, settings.docType, token]);
 
     const handleTextChange = (slideIndex, field, value) => {
         const newSlides = [...editableSlides];
@@ -977,6 +1327,12 @@ const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
     };
 
     const regenerateText = async (slideIndex, contentIndex) => {
+        // ✅ Prevent multiple simultaneous regeneration
+        if (regenerating.slide !== null) {
+            console.log("[LOG: Muharrir] Regeneratsiya allaqachon jarayonda.");
+            return;
+        }
+        
         const contentSlide = editableSlides.filter(s => s.type === 'content')[slideIndex];
         setRegenerating({ slide: slideIndex, item: contentIndex, type: 'text' });
         try {
@@ -997,13 +1353,32 @@ const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
     };
 
     const regenerateImage = async (slideIndex) => {
+        // ✅ Prevent multiple simultaneous regeneration
+        if (regenerating.slide !== null) {
+            console.log("[LOG: Muharrir] Regeneratsiya allaqachon jarayonda.");
+            return;
+        }
+        
         setRegenerating({ slide: slideIndex, item: null, type: 'image' });
         try {
-            const response = await api.getImageUrl(settings.topic);
-            if (response.image_url) {
-                handleSlideImageChange(slideIndex, response.image_url);
+            // ✅ YANGI: Avval cache'dan olishga harakat qilish
+            const cachedImages = imageCache.get(settings.topic);
+            
+            if (cachedImages && cachedImages.length > 0) {
+                // Cache'dan random rasm tanlash (INSTANT, API CALL YO'Q!)
+                const randomIndex = Math.floor(Math.random() * cachedImages.length);
+                const newImageUrl = cachedImages[randomIndex];
+                handleSlideImageChange(slideIndex, newImageUrl);
+                console.log(`✅ Changed image from cache (${cachedImages.length} available)`);
             } else {
-                showNotification("Yangi rasm topilmadi.", 'info');
+                // Fallback: API call (faqat cache bo'lmasa)
+                console.log(`⚠️ No cache, calling API for topic: ${settings.topic}`);
+                const response = await api.getImageUrl(settings.topic);
+                if (response.image_url) {
+                    handleSlideImageChange(slideIndex, response.image_url);
+                } else {
+                    showNotification("Yangi rasm topilmadi.", 'info');
+                }
             }
         } catch (error) {
             console.error("Image regeneration failed:", error);
@@ -1016,6 +1391,12 @@ const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
     const handleLocalImageUpload = async (event) => {
         const file = event.target.files[0];
         if (!file || !currentSlideForImageUpload) return;
+        
+        // ✅ Prevent duplicate uploads
+        if (regenerating.slide !== null) {
+            console.log("[LOG: Muharrir] Rasm allaqachon yuklanmoqda.");
+            return;
+        }
 
         const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSizeInBytes) {
@@ -1044,38 +1425,105 @@ const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
     };
 
     const doSave = async () => {
+        // ✅ Prevent multiple simultaneous save operations
+        if (isSaving) {
+            console.log("[LOG: Muharrir] Saqlash allaqachon jarayonda, qayta chaqirilmaydi.");
+            return;
+        }
+        
         setIsSaving(true);
         console.log("[LOG: Muharrir] Saqlash tugmasi bosildi. API so'rovi yuborilmoqda...");
         try {
-            const planSlide = editableSlides.find(s => s.type === 'plan');
-            const planItems = planSlide ? planSlide.content.items : [];
-
-            const editedContentSlides = editableSlides
-                .filter(s => s.type === 'content')
-                .map(s => s.content);
+            let requestData;
             
-            const finalContentData = { 
-                ...generatedContentData, 
-                slides: editedContentSlides,
-                plans: planItems
-            };
+            if (settings.docType === 'Test') {
+                // ✅ Test uchun DOCX fayl yaratish
+                requestData = {
+                    token: token,
+                    generated_test_data: generatedContentData, // TestData from /generate_test
+                    generated_content_data: null,
+                    generated_document_data: null,
+                    generated_crossword_data: null,
+                    full_name: settings.fullName,
+                    topic: settings.topic,
+                    doc_lang: settings.lang || 'uz',
+                    file_type: 'test', // ✅ DOCX format
+                    sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
+                };
+            } else if (settings.docType === 'Krossword') {
+                // ✅ Krossword uchun PPTX fayl yaratish
+                requestData = {
+                    token: token,
+                    generated_crossword_data: generatedContentData, // CrosswordData from /generate_crossword
+                    generated_content_data: null,
+                    generated_document_data: null,
+                    generated_test_data: null,
+                    full_name: settings.fullName,
+                    topic: settings.topic,
+                    doc_lang: settings.lang || 'uz',
+                    file_type: 'crossword', // ✅ PPTX format
+                    sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
+                };
+            } else {
+                // ✅ Taqdimot va Referat uchun
+                const planSlide = editableSlides.find(s => s.type === 'plan');
+                const planItems = planSlide ? planSlide.content.items : [];
 
-            const requestData = {
-                token: token,
-                generated_content_data: finalContentData,
-                full_name: settings.fullName,
-                topic: settings.topic,
-                doc_lang: settings.lang || 'uz',
-                institution_info: {
-                    university: settings.university,
-                    faculty: settings.faculty,
-                    direction: settings.direction,
-                    group: settings.group
-                },
-                template_name: settings.docType === 'Taqdimot' ? `${settings.templateCategory.toLowerCase()}/${settings.selectedTemplate}` : 'template',
-                file_type: settings.docType === 'Taqdimot' ? 'pptx' : 'docx',
-                sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
-            };
+                const editedContent = editableSlides
+                    .filter(s => s.type === 'content')
+                    .map(s => s.content);
+                
+                if (settings.docType === 'Taqdimot') {
+                const finalContentData = { 
+                    ...generatedContentData, 
+                    slides: editedContent,
+                    plans: planItems
+                };
+                
+                requestData = {
+                    token: token,
+                    generated_content_data: finalContentData,
+                    generated_document_data: null,
+                    full_name: settings.fullName,
+                    topic: settings.topic,
+                    doc_lang: settings.lang || 'uz',
+                    institution_info: {
+                        university: settings.university || '',
+                        faculty: settings.faculty || '',
+                        direction: settings.direction || '',
+                        group: settings.group || ''
+                    },
+                    template_name: `${settings.templateCategory.toLowerCase()}/${settings.selectedTemplate}`,
+                    file_type: 'pptx',
+                    sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
+                };
+                } else if (settings.docType === 'Referat') {
+                    const finalDocumentData = {
+                        ...generatedContentData,
+                        sections: editedContent,
+                        plans: planItems
+                    };
+                    
+                    requestData = {
+                        token: token,
+                        generated_content_data: null,
+                        generated_document_data: finalDocumentData,
+                        full_name: settings.fullName,
+                        topic: settings.topic,
+                        doc_lang: settings.lang || 'uz',
+                        institution_info: {
+                            university: settings.university || '',
+                            faculty: settings.faculty || '',
+                            direction: settings.direction || '',
+                            group: settings.group || ''
+                        },
+                        accepted_by: settings.acceptedBy || '',
+                        template_name: 'template1',
+                        file_type: 'abstract',
+                        sources: settings.sourceFilePath ? [settings.sourceFilePath] : []
+                    };
+                }
+            } // ✅ else block tugadi
             
             const creationResponse = await api.createFile(requestData);
 
@@ -1100,8 +1548,8 @@ const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
         return (
             <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)] animate-fade-in">
                 <Loader className="animate-spin mb-4" size={48} style={{color: theme.accent}}/>
-                <p className="text-lg opacity-80">{settings.docType} yaratilmoqda, iltimos kuting...</p>
-                <p className="text-sm opacity-60 mt-2">Bu jarayon bir daqiqagacha vaqt olishi mumkin.</p>
+                <p className="text-lg opacity-80">{settings.docType} generatsiya qilinmoqda, iltimos kuting...</p>
+                <p className="text-sm opacity-60 mt-2">Bu jarayon bir necha soniya davom etishi mumkin.</p>
             </div>
         );
     }
@@ -1110,7 +1558,9 @@ const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
         const c = s.content; 
         switch (s.type) { 
             case 'title': return (<div className="h-full flex flex-col justify-center items-center p-4 text-center"><EditableText value={c.institution} onChange={e => handleTextChange(i, 'institution', e.target.value)} theme={theme} className="text-lg opacity-80" /><EditableText value={c.title} onChange={e => handleTextChange(i, 'title', e.target.value)} theme={theme} className="text-4xl font-bold my-6" /><EditableText value={c.author} onChange={e => handleTextChange(i, 'author', e.target.value)} theme={theme} className="text-xl" /></div>); 
-            case 'plan': return (<div className="h-full p-6"><EditableText value={c.title} onChange={e => handleTextChange(i, 'title', e.target.value)} theme={theme} className="text-2xl font-bold mb-4" /><ul className="space-y-3">{c.items.map((it, iI) => (<li key={iI} className="flex items-start"><span className="mr-2 mt-1" style={{color: theme.accent}}>●</span><EditableText value={it} onChange={e => handlePlanItemChange(i, iI, e.target.value)} theme={theme} className="flex-grow" /></li>))}</ul></div>); 
+            case 'plan': return (<div className="h-full p-6"><EditableText value={c.title} onChange={e => handleTextChange(i, 'title', e.target.value)} theme={theme} className="text-2xl font-bold mb-4" /><ul className="space-y-3">{c.items.map((it, iI) => (<li key={iI} className="flex items-start"><span className="mr-2 mt-1" style={{color: theme.accent}}>●</span><EditableText value={it} onChange={e => handlePlanItemChange(i, iI, e.target.value)} theme={theme} className="flex-grow" /></li>))}</ul></div>);
+            case 'test': return (<div className="h-full p-4 overflow-y-auto"><h2 className="text-2xl font-bold mb-4 text-center">{c.topic}</h2><p className="text-center opacity-70 mb-6">Qiyinlik: {c.difficulty} | Savollar: {c.questions.length} ta</p><div className="space-y-6">{c.questions.map((q, qIdx) => (<div key={qIdx} className="p-4 rounded-lg" style={{backgroundColor: theme.subtle}}><p className="font-semibold mb-3">{qIdx + 1}. {q.question}</p><div className="space-y-2 ml-4">{q.options.map((opt, optIdx) => (<div key={optIdx} className="flex items-center"><span className={`mr-2 ${String.fromCharCode(65 + optIdx) === q.correct_answer ? 'text-green-500 font-bold' : ''}`}>{String.fromCharCode(65 + optIdx)})</span><span className={String.fromCharCode(65 + optIdx) === q.correct_answer ? 'text-green-500' : ''}>{opt}</span></div>))}</div></div>))}</div></div>);
+            case 'crossword': return (<div className="h-full p-4 overflow-y-auto"><h2 className="text-2xl font-bold mb-4 text-center">{c.topic}</h2><p className="text-center opacity-70 mb-6">Qiyinlik: {c.difficulty} | So'zlar: {c.words.length} ta</p><div className="space-y-4">{c.words.map((w, wIdx) => (<div key={wIdx} className="p-3 rounded-lg" style={{backgroundColor: theme.subtle}}><p className="font-bold text-lg mb-2" style={{color: theme.accent}}>{w.word}</p><p className="opacity-80">{w.clue}</p><p className="text-sm opacity-50 mt-1">Yo'nalish: {w.direction === 'horizontal' ? 'Gorizontal' : 'Vertikal'}</p></div>))}</div></div>);
             case 'content': 
                 const slideIndex = editableSlides.filter(sl => sl.type === 'content').indexOf(s);
                 return (
@@ -1132,7 +1582,7 @@ const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
             default: return null; 
         }
     };
-    return (<div className="animate-fade-in"><input type="file" ref={localImageInputRef} onChange={handleLocalImageUpload} accept="image/png, image/jpeg" className="hidden" /><header className="flex items-center mb-6"><button onClick={() => navigateTo('yaratish')} className="p-2 mr-4 rounded-full" style={{backgroundColor: theme.subtle}}><ArrowLeft size={20} /></button><h1 className="text-2xl font-bold truncate">Muharrir</h1></header><div className="space-y-6 pb-4">{editableSlides.map((s, i) => (<GlassCard key={i} theme={theme} className="w-full min-h-[24rem]">{renderSlide(s, i)}</GlassCard>))}</div><button onClick={doSave} disabled={isSaving} className="w-full mt-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-[1.02] active:scale-98 relative z-20 flex items-center justify-center disabled:opacity-70" style={{backgroundColor: theme.accent}}>{isSaving ? <><Loader className="animate-spin mr-2" /> Saqlanmoqda...</> : `${settings.docType}ni Saqlash`}</button></div>);
+    return (<div className="animate-fade-in"><input type="file" ref={localImageInputRef} onChange={handleLocalImageUpload} accept="image/png, image/jpeg" className="hidden" /><header className="flex items-center mb-6"><button onClick={() => navigateTo('yaratish')} className="p-2 mr-4 rounded-full" style={{backgroundColor: theme.subtle}}><ArrowLeft size={20} /></button><h1 className="text-2xl font-bold truncate">{settings.docType === 'Test' || settings.docType === 'Krossword' ? 'Ko\'rish' : 'Muharrir'}</h1></header><div className="space-y-6 pb-4">{editableSlides.map((s, i) => (<GlassCard key={i} theme={theme} className="w-full min-h-[24rem]">{renderSlide(s, i)}</GlassCard>))}</div><button onClick={doSave} disabled={isSaving} className="w-full mt-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-[1.02] active:scale-98 relative z-20 flex items-center justify-center disabled:opacity-70" style={{backgroundColor: theme.accent}}>{isSaving ? <><Loader className="animate-spin mr-2" /> Saqlanmoqda...</> : `${settings.docType}ni Saqlash`}</button></div>);
 };
 
 const EditableText = ({ value, onChange, theme, className }) => (<textarea value={value} onChange={onChange} className={`bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-[${theme.accent}] rounded p-1 w-full resize-none ${className}`} style={{ color: 'inherit', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', lineHeight: 'inherit', textAlign: 'inherit' }} rows={Math.max(1, Math.ceil((value || '').length / 40))}/>);
@@ -1162,46 +1612,90 @@ const GenerationStatusScreen = ({ navigateTo, theme, taskInfo, onGenerationSucce
     const [status, setStatus] = useState('pending');
     const [error, setError] = useState(null);
     const [statusMessage, setStatusMessage] = useState(`So'rov yuborildi, ${docType} yaratish boshlanmoqda...`);
+    const hasStartedPollingRef = useRef(false); // ✅ Track if polling started
+    const hasCompletedRef = useRef(false); // ✅ Track if already completed
+    const pollCountRef = useRef(0); // ✅ Track number of polls
 
     useEffect(() => {
+        // ✅ Prevent duplicate polling in React.StrictMode
+        if (hasStartedPollingRef.current) {
+            console.log("[LOG] Polling already started, skipping...");
+            return;
+        }
+        
         if (!taskId) {
             setError("Fayl yaratish uchun kerakli ma'lumot (task_id) topilmadi.");
             return;
         }
+        
+        hasStartedPollingRef.current = true;
         console.log(`[LOG] Statusni tekshirish boshlandi. Task ID: ${taskId}`);
 
-        const pollInterval = setInterval(async () => {
+        // ✅ Progressive polling: birinchi 10 so'rovda 2s, keyin 4s
+        const getPollingInterval = () => {
+            return pollCountRef.current < 10 ? 2000 : 4000;
+        };
+
+        const pollStatus = async () => {
             try {
+                pollCountRef.current += 1;
                 const statusResponse = await api.getFileStatus(taskId);
-                console.log("[LOG] Olingan status:", statusResponse);
+                console.log(`[LOG] Olingan status (attempt ${pollCountRef.current}):`, statusResponse);
                 setStatus(statusResponse.status);
 
                 if (statusResponse.status === 'completed') {
-                    clearInterval(pollInterval);
+                    // ✅ Prevent duplicate completion handling
+                    if (hasCompletedRef.current) {
+                        console.log("[LOG] Already completed, skipping duplicate callback");
+                        return;
+                    }
+                    hasCompletedRef.current = true;
+                    
                     setStatusMessage('Fayl muvaffaqiyatli yaratildi!');
                     const downloadUrl = `${API_BASE_URL}/download_file/${statusResponse.file_path}`;
                     
-                    const fileType = docType === 'Taqdimot' ? 'pptx' : 'docx'; // Determine fileType
-                    const newDoc = { title: docTitle, date: new Date().toISOString().split('T')[0], downloadUrl: downloadUrl, docType: docType, fileType: fileType }; // Add docType and fileType
+                    // ✅ File type aniqlash
+                    let fileType;
+                    if (docType === 'Taqdimot') {
+                        fileType = 'pptx';
+                    } else if (docType === 'Test') {
+                        fileType = 'docx';
+                    } else if (docType === 'Krossword') {
+                        fileType = 'pptx';
+                    } else {
+                        fileType = 'docx'; // Referat
+                    }
+                    
+                    const newDoc = { title: docTitle, date: new Date().toISOString().split('T')[0], downloadUrl: downloadUrl, docType: docType, fileType: fileType };
                     
                     window.open(downloadUrl, '_blank');
                     
                     console.log("[LOG] Fayl tayyor. Hujjatlar sahifasiga o'tilmoqda.");
                     setTimeout(() => onGenerationSuccess(newDoc), 500);
+                    return; // Stop polling
 
                 } else if (statusResponse.status === 'failed') {
-                    clearInterval(pollInterval);
                     setError("Fayl yaratishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring yoki administrator bilan bog'laning.");
+                    return; // Stop polling
+                    
                 } else {
-                     setStatusMessage('Generatsiya qilinmoqda, iltimos kuting...');
+                    setStatusMessage('Generatsiya qilinmoqda, iltimos kuting...');
+                    // ✅ Schedule next poll with progressive interval
+                    setTimeout(pollStatus, getPollingInterval());
                 }
             } catch (pollError) {
-                clearInterval(pollInterval);
+                console.error("[LOG] Polling xatolik:", pollError);
                 setError(`Fayl holatini tekshirishda xatolik: ${pollError.message}`);
             }
-        }, 4000); // 4 soniyada bir tekshirish
+        };
 
-        return () => clearInterval(pollInterval); 
+        // ✅ Start first poll immediately
+        pollStatus();
+
+        // ✅ No need for setInterval, using recursive setTimeout
+        return () => {
+            hasStartedPollingRef.current = false;
+        }; 
 
     }, [taskId, docTitle, docType, navigateTo, onGenerationSuccess]);
     
@@ -1249,13 +1743,21 @@ const ProfilScreen = ({ navigateTo, theme, isDarkMode, setIsDarkMode, handleLogo
 
   const handleAvatarChange = (e) => {
       if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          
+          // Validate file size (max 2MB)
+          if (file.size > 2 * 1024 * 1024) {
+              showNotification('Rasm hajmi 2MB dan kichik bo\'lishi kerak', 'error');
+              return;
+          }
+          
           const reader = new FileReader();
           reader.onload = (event) => {
               const base64String = event.target.result;
               setAvatar(base64String);
               localStorage.setItem('userAvatar', base64String);
           };
-          reader.readAsDataURL(e.target.files[0]);
+          reader.readAsDataURL(file);
       }
   };
   
@@ -1404,9 +1906,18 @@ const PaymentFlowModal = ({ theme, onClose }) => {
     const [paymentId, setPaymentId] = useState(null);
     const [statusMessage, setStatusMessage] = useState('To\'lov kutilmoqda...');
     const pollIntervalRef = useRef(null);
+    const hasStartedPaymentPollingRef = useRef(false); // ✅ Track payment polling
 
     useEffect(() => {
         if (step === 'wait' && paymentId) {
+            // ✅ Prevent duplicate polling
+            if (hasStartedPaymentPollingRef.current) {
+                console.log("[LOG] Payment polling already active, skipping...");
+                return;
+            }
+            
+            hasStartedPaymentPollingRef.current = true;
+            
             pollIntervalRef.current = setInterval(async () => {
                 try {
                     const res = await api.checkPaymentStatus(paymentId, token);
@@ -1425,10 +1936,19 @@ const PaymentFlowModal = ({ theme, onClose }) => {
                 }
             }, 3000);
         }
-        return () => clearInterval(pollIntervalRef.current);
+        return () => {
+            clearInterval(pollIntervalRef.current);
+            hasStartedPaymentPollingRef.current = false; // ✅ Reset on cleanup
+        };
     }, [step, paymentId, token, refreshUser, onClose]);
 
     const handlePayment = async () => {
+        // ✅ Prevent multiple simultaneous payment requests
+        if (isProcessing) {
+            console.log("[LOG: PaymentFlowModal] To'lov allaqachon jarayonda.");
+            return;
+        }
+        
         if (!amount || isNaN(amount) || amount <= 0) { 
             showNotification("Iltimos, to'g'ri summa kiriting.", 'error'); 
             return; 
