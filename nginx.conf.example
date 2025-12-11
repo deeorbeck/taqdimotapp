@@ -1,0 +1,24 @@
+# Nginx Configuration for SPA Routing
+# Agar nginx ishlatayotgan bo'lsangiz, server block'ingizga qo'shing:
+
+server {
+    listen 80;
+    server_name taqdimot.ismailov.uz;
+    root /var/www/taqdimot/dist;
+    index index.html;
+
+    # Barcha URL'lar uchun index.html qaytarish (SPA routing)
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Static assets cache
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
