@@ -2358,6 +2358,224 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
     );
 };
 
+// Document Detail ekrani - Alohida hujjat sahifasi (SEO uchun)
+const DocumentDetailScreen = ({ documentId, navigateTo, theme }) => {
+    const [doc, setDoc] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchDocument = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                // searchExternal API bilan ID bo'yicha qidirish
+                const results = await api.searchExternal(documentId, null, 1, 1);
+                if (results && results.length > 0) {
+                    setDoc(results[0]);
+                } else {
+                    setError("Hujjat topilmadi");
+                }
+            } catch (error) {
+                console.error("Hujjat yuklashda xatolik:", error);
+                setError("Hujjat yuklashda xatolik yuz berdi");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (documentId) {
+            fetchDocument();
+        }
+    }, [documentId]);
+
+    if (isLoading) {
+        return (
+            <div className="animate-fade-in flex justify-center items-center min-h-screen">
+                <Loader className="animate-spin" size={48} style={{color: theme.accent}}/>
+                <span className="ml-4 text-xl">Yuklanmoqda...</span>
+            </div>
+        );
+    }
+
+    if (error || !doc) {
+        return (
+            <div className="animate-fade-in">
+                <header className="flex items-center mb-6">
+                    <button onClick={() => navigateTo('showcase')} className="p-2 mr-4 rounded-full" style={{backgroundColor: theme.subtle}}>
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h1 className="text-2xl font-bold">Xatolik</h1>
+                </header>
+                <GlassCard theme={theme} className="text-center py-12">
+                    <XCircle size={48} className="mx-auto mb-4 text-red-500" />
+                    <p className="text-lg mb-4">{error || "Hujjat topilmadi"}</p>
+                    <button 
+                        onClick={() => navigateTo('showcase')}
+                        className="px-6 py-3 rounded-lg text-white font-bold"
+                        style={{backgroundColor: theme.accent}}
+                    >
+                        Barcha Hujjatlarga Qaytish
+                    </button>
+                </GlassCard>
+            </div>
+        );
+    }
+
+    // SEO-friendly title va description
+    const pageTitle = `${doc.text} - ${doc.type} | Taqdimot App`;
+    const pageDescription = `${doc.text} mavzusida ${doc.type.toLowerCase()}. Sun'iy intellekt bilan yaratilgan professional hujjat. Faqat 5,000 so'mda yuklab oling!`;
+    const pageKeywords = `${doc.text}, ${doc.type.toLowerCase()}, tayyor ${doc.type.toLowerCase()}, yuklab olish, AI, sun'iy intellekt`;
+
+    return (
+        <div className="animate-fade-in">
+            <Helmet>
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <meta name="keywords" content={pageKeywords} />
+                
+                {/* Open Graph */}
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={pageDescription} />
+                <meta property="og:type" content="article" />
+                <meta property="og:url" content={`https://taqdimot.ismailov.uz/d/${documentId}`} />
+                
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={pageDescription} />
+                
+                {/* Canonical URL */}
+                <link rel="canonical" href={`https://taqdimot.ismailov.uz/d/${documentId}`} />
+            </Helmet>
+
+            <header className="flex items-center mb-6">
+                <button onClick={() => navigateTo('showcase')} className="p-2 mr-4 rounded-full" style={{backgroundColor: theme.subtle}}>
+                    <ArrowLeft size={20} />
+                </button>
+                <h1 className="text-2xl font-bold">Hujjat Tafsilotlari</h1>
+            </header>
+
+            <GlassCard theme={theme} className="mb-6">
+                <div className="flex items-start mb-6">
+                    {doc.type === 'Taqdimot' ? (
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                            background: 'linear-gradient(135deg, #3b82f620, #3b82f640)',
+                            boxShadow: '0 0 30px #3b82f630'
+                        }}>
+                            <Presentation size={32} className="text-blue-600" />
+                        </div>
+                    ) : doc.type === 'Referat' ? (
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                            background: 'linear-gradient(135deg, #10b98120, #10b98140)',
+                            boxShadow: '0 0 30px #10b98130'
+                        }}>
+                            <Scroll size={32} className="text-green-600" />
+                        </div>
+                    ) : doc.type === 'Test' ? (
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                            background: 'linear-gradient(135deg, #f9731620, #f9731640)',
+                            boxShadow: '0 0 30px #f9731630'
+                        }}>
+                            <ClipboardList size={32} className="text-orange-600" />
+                        </div>
+                    ) : (
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                            background: 'linear-gradient(135deg, #a855f720, #a855f740)',
+                            boxShadow: '0 0 30px #a855f730'
+                        }}>
+                            <Grid3x3 size={32} className="text-purple-600" />
+                        </div>
+                    )}
+                    
+                    <div className="flex-1">
+                        <h2 className="text-2xl font-bold mb-2">{doc.text}</h2>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm px-3 py-1 rounded-full" style={{backgroundColor: theme.subtle}}>
+                                {doc.type}
+                            </span>
+                            <span className="text-2xl font-bold" style={{color: theme.accent}}>
+                                5,000 so'm
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="border-t pt-6 mb-6" style={{borderColor: theme.subtle}}>
+                    <h3 className="font-bold text-lg mb-3">Hujjat haqida:</h3>
+                    <p className="text-base opacity-90 leading-relaxed mb-4">
+                        <strong>{doc.text}</strong> mavzusida sun'iy intellekt (AI) yordamida yaratilgan professional {doc.type.toLowerCase()}.
+                        Barcha ma'lumotlar aniq va to'liq, hujjat darhol ishlatishga tayyor.
+                    </p>
+                    
+                    <div className="grid md:grid-cols-2 gap-4 mt-4">
+                        <div className="p-4 rounded-lg" style={{backgroundColor: theme.subtle}}>
+                            <h4 className="font-semibold mb-2">✨ Xususiyatlar:</h4>
+                            <ul className="text-sm space-y-1 opacity-80">
+                                <li>• AI texnologiyasi bilan yaratilgan</li>
+                                <li>• Professional dizayn va formatlash</li>
+                                <li>• To'liq va aniq ma'lumotlar</li>
+                                <li>• Darhol ishlatishga tayyor</li>
+                            </ul>
+                        </div>
+                        
+                        <div className="p-4 rounded-lg" style={{backgroundColor: theme.subtle}}>
+                            <h4 className="font-semibold mb-2">📦 Format:</h4>
+                            <ul className="text-sm space-y-1 opacity-80">
+                                <li>• {doc.type === 'Taqdimot' ? 'PPTX (PowerPoint)' : 'PDF format'}</li>
+                                <li>• Yuqori sifat</li>
+                                <li>• Barcha qurilmalarda ochiladi</li>
+                                <li>• Tahrirlash mumkin</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <a 
+                        href={`https://t.me/taqdimot_robot?start=id_${doc.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 px-6 py-4 rounded-xl text-white font-bold text-center transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
+                        style={{
+                            backgroundColor: theme.accent,
+                            boxShadow: `0 0 30px ${theme.accent}40`
+                        }}
+                    >
+                        <Download size={24} />
+                        Yuklab Olish (5,000 so'm)
+                    </a>
+                    
+                    <button 
+                        onClick={() => navigateTo('showcase')}
+                        className="px-6 py-4 rounded-xl font-bold transition-all hover:scale-105 active:scale-95"
+                        style={{backgroundColor: theme.subtle}}
+                    >
+                        Boshqa Hujjatlar
+                    </button>
+                </div>
+            </GlassCard>
+
+            {/* SEO Content */}
+            <GlassCard theme={theme}>
+                <h3 className="font-bold text-lg mb-3">Qanday Yuklab Olish Mumkin?</h3>
+                <ol className="text-sm opacity-80 leading-relaxed space-y-2">
+                    <li><strong>1.</strong> "Yuklab Olish" tugmasini bosing</li>
+                    <li><strong>2.</strong> Telegram bot ochiladi</li>
+                    <li><strong>3.</strong> To'lovni amalga oshiring (5,000 so'm)</li>
+                    <li><strong>4.</strong> Hujjat darhol Telegram orqali yuboriladi</li>
+                    <li><strong>5.</strong> Yuklab oling va ishlatishni boshlang!</li>
+                </ol>
+                
+                <p className="mt-4 text-sm opacity-70">
+                    <strong>Eslatma:</strong> Barcha to'lovlar xavfsiz va Telegram bot orqali amalga oshiriladi.
+                    Hujjatlar yuqori sifatda va darhol yetkazib beriladi.
+                </p>
+            </GlassCard>
+        </div>
+    );
+};
+
 // FAQ ekrani
 const FaqScreen = ({ navigateTo, theme }) => {
     const faqData = [{ q: "Ilovadan qanday foydalanish mumkin?", a: "Ilovadan foydalanish juda oson: '+' tugmasini bosing, kerakli hujjat turini tanlang, ma'lumotlarni kiriting va 'Tayyorlash' tugmasini bosing. AI qolganini o'zi bajaradi!" },{ q: "Taqdimot yaratish qancha vaqt oladi?", a: "Odatda, taqdimotni generatsiya qilish 30 soniyadan 1 daqiqagacha vaqt oladi. Bu slaydlardagi ma'lumotlar hajmiga va rasmlar mavjudligiga bog'liq." },{ q: "Generatsiya qilingan matnlarni o'zgartirsam bo'ladimi?", a: "Albatta! 'Taqdimot Muharriri' ekranida har bir matn bloki to'liq tahrirlanadigan. Siz AI taklif qilgan matnni o'zgartirishingiz, to'ldirishingiz yoki butunlay o'chirib, o'zingiznikini yozishingiz mumkin." },{ q: "Balansni qanday to'ldirish mumkin?", a: "'Profil' ekranidagi 'Balans' bo'limida 'Hisobni to'ldirish' tugmasini bosing. U yerda siz uchun qulay bo'lgan to'lov tizimlaridan birini tanlashingiz mumkin." },{ q: "Texnik muammo yuzaga kelsa nima qilishim kerak?", a: "Agar texnik muammoga duch kelsangiz, 'Qo'llab-quvvatlash' sahifasidagi Admin bilan bog'lanish havolasi orqali bizga murojaat qiling. Muammoni iloji boricha tezroq hal qilishga harakat qilamiz." },];
