@@ -2351,7 +2351,11 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                                         <span className="text-sm px-3 py-1 rounded-full" style={{backgroundColor: theme.subtle}}>
                                             {(() => {
                                                 const type = doc.type?.toLowerCase();
-                                                if (type === 'pptx' || type === 'ppsx') return 'Taqdimot';
+                                                if (type === 'pptx' || type === 'ppsx') {
+                                                    // #wi bor-yo'qligini tekshirish
+                                                    const hasImages = doc.text?.includes('#wi');
+                                                    return hasImages ? 'Taqdimot (rasmli)' : 'Taqdimot (rasmsiz)';
+                                                }
                                                 if (type === 'referat') return 'Referat';
                                                 if (type === 'docx') return 'Mustaqil ish';
                                                 if (type === 'test') return 'Test';
@@ -2617,7 +2621,10 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                                 <span className="text-sm px-3 py-1 rounded-full font-semibold" style={{backgroundColor: theme.subtle}}>
                                     {(() => {
                                         const type = doc.type?.toLowerCase();
-                                        if (type === 'pptx' || type === 'ppsx') return 'Taqdimot';
+                                        if (type === 'pptx' || type === 'ppsx') {
+                                            const hasImages = doc.text?.includes('#wi');
+                                            return hasImages ? 'Taqdimot (rasmli)' : 'Taqdimot (rasmsiz)';
+                                        }
                                         if (type === 'referat') return 'Referat';
                                         if (type === 'docx') return 'Mustaqil ish';
                                         if (type === 'test') return 'Test';
@@ -2632,7 +2639,12 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                             <p className="text-sm opacity-70">
                                 {(() => {
                                     const type = doc.type?.toLowerCase();
-                                    if (type === 'pptx' || type === 'ppsx') return '📊 PowerPoint taqdimoti (PPTX) - 6-20 slaydli professional taqdimot';
+                                    if (type === 'pptx' || type === 'ppsx') {
+                                        const hasImages = doc.text?.includes('#wi');
+                                        return hasImages 
+                                            ? '📊 PowerPoint taqdimoti (PPTX) - 6-20 slaydli rasmli professional taqdimot'
+                                            : '📊 PowerPoint taqdimoti (PPTX) - 6-20 slaydli rasmsiz professional taqdimot';
+                                    }
                                     if (type === 'referat') return '📝 Word referati (DOCX) - 10-15 sahifali ilmiy ish';
                                     if (type === 'docx') return '📄 Word mustaqil ish (DOCX) - 5-10 sahifali amaliy topshiriqlar';
                                     if (type === 'test') return '📋 PDF test (PDF) - 10-50 savollik test javoblar bilan';
@@ -2650,7 +2662,12 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                         <strong>{doc.text}</strong> mavzusida sun'iy intellekt (AI) yordamida yaratilgan professional hujjat.
                         {(() => {
                             const type = doc.type?.toLowerCase();
-                            if (type === 'pptx' || type === 'ppsx') return ' 6-20 slaydli rasmli taqdimot PowerPoint formatida.';
+                            if (type === 'pptx' || type === 'ppsx') {
+                                const hasImages = doc.text?.includes('#wi');
+                                return hasImages 
+                                    ? ' 6-20 slaydli rasmli taqdimot PowerPoint formatida.'
+                                    : ' 6-20 slaydli rasmsiz taqdimot PowerPoint formatida.';
+                            }
                             if (type === 'referat') return ' 10-15 sahifali to\'liq ilmiy referat Word formatida.';
                             if (type === 'docx') return ' 5-10 sahifali amaliy topshiriqlar bilan mustaqil ish Word formatida.';
                             if (type === 'test') return ' 10-50 savollik test javoblar bilan PDF formatida.';
@@ -2666,10 +2683,21 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                                 {(() => {
                                     const type = doc.type?.toLowerCase();
                                     if (type === 'pptx' || type === 'ppsx') {
+                                        const hasImages = doc.text?.includes('#wi');
                                         return (
                                             <>
                                                 <li>• 6-20 professional slaydlar</li>
-                                                <li>• Rasmli dizayn va animatsiyalar</li>
+                                                {hasImages ? (
+                                                    <>
+                                                        <li>• 🖼️ Rasmli dizayn va animatsiyalar</li>
+                                                        <li>• 📸 Har bir slaydda mos rasmlar</li>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <li>• 📝 Matnli professional dizayn</li>
+                                                        <li>• ⚡ Tez yuklanish</li>
+                                                    </>
+                                                )}
                                                 <li>• 40+ zamonaviy shablonlar</li>
                                                 <li>• PowerPoint va Google Slides'da ochiladi</li>
                                             </>
