@@ -384,7 +384,25 @@ export default function App() {
 function MainApp() {
   const { isLoggedIn, logout, isLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [activeScreen, setActiveScreen] = useState(isLoggedIn ? 'hujjatlarim' : 'landing');
+  
+  // URL'dan initial screen'ni olish
+  const getInitialScreen = () => {
+    const path = window.location.pathname;
+    if (path === '/login') return 'login';
+    if (path === '/showcase') return 'showcase';
+    if (path === '/landing' || path === '/') return 'landing';
+    if (isLoggedIn) {
+      if (path === '/hujjatlarim') return 'hujjatlarim';
+      if (path === '/yaratish') return 'yaratish';
+      if (path === '/profil') return 'profil';
+      if (path === '/support') return 'support';
+      if (path === '/faq') return 'faq';
+      return 'hujjatlarim';
+    }
+    return 'landing';
+  };
+  
+  const [activeScreen, setActiveScreen] = useState(getInitialScreen());
   const [presentationSettings, setPresentationSettings] = useState(null);
   const [generationTask, setGenerationTask] = useState(null);
   const [allDocs, setAllDocs] = useState(() => {
@@ -403,6 +421,18 @@ function MainApp() {
   useEffect(() => {
     document.body.style.backgroundColor = theme.bg;
   }, [isDarkMode, theme.bg]);
+  
+  // Browser back/forward button uchun
+  useEffect(() => {
+    const handlePopState = () => {
+      const newScreen = getInitialScreen();
+      console.log(`[LOG: PopState] URL o'zgartirildi: ${window.location.pathname} → ${newScreen}`);
+      setActiveScreen(newScreen);
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isLoggedIn]);
   
   useEffect(() => {
     try {
@@ -466,6 +496,26 @@ function MainApp() {
     if (screen === 'status') {
       setGenerationTask(settings);
     }
+    
+    // URL'ni yangilash
+    const pathMap = {
+      'landing': '/',
+      'login': '/login',
+      'showcase': '/showcase',
+      'hujjatlarim': '/hujjatlarim',
+      'yaratish': '/yaratish',
+      'profil': '/profil',
+      'support': '/support',
+      'faq': '/faq',
+      'muharrir': '/muharrir',
+      'status': '/status'
+    };
+    
+    const newPath = pathMap[screen] || '/';
+    if (window.location.pathname !== newPath) {
+      window.history.pushState({ screen }, '', newPath);
+    }
+    
     setActiveScreen(screen);
   };
   
