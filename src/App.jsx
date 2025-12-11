@@ -2537,6 +2537,13 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                         }}>
                             <Scroll size={32} className="text-green-600" />
                         </div>
+                    ) : (doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') ? (
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                            background: 'linear-gradient(135deg, #ec489820, #ec489840)',
+                            boxShadow: '0 0 30px #ec489830'
+                        }}>
+                            <FileText size={32} className="text-pink-600" />
+                        </div>
                     ) : doc.type === 'Test' ? (
                         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
                             background: 'linear-gradient(135deg, #f9731620, #f9731640)',
@@ -2553,10 +2560,10 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                         </div>
                     ) : (
                         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
-                            background: 'linear-gradient(135deg, #ec489820, #ec489840)',
-                            boxShadow: '0 0 30px #ec489830'
+                            background: 'linear-gradient(135deg, #6b728020, #6b728040)',
+                            boxShadow: '0 0 30px #6b728030'
                         }}>
-                            <FileText size={32} className="text-pink-600" />
+                            <FileText size={32} className="text-gray-600" />
                         </div>
                     )}
                     
