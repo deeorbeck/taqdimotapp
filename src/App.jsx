@@ -2315,12 +2315,16 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                                     <div className="flex items-center mb-2">
                                         {doc.type === 'Taqdimot' ? (
                                             <Presentation size={20} className="mr-2 text-blue-600" />
+                                        ) : doc.type === 'Referat' ? (
+                                            <Scroll size={20} className="mr-2 text-green-600" />
+                                        ) : (doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') ? (
+                                            <FileText size={20} className="mr-2 text-pink-600" />
                                         ) : doc.type === 'Test' ? (
                                             <ClipboardList size={20} className="mr-2 text-orange-600" />
                                         ) : doc.type === 'Krossword' ? (
                                             <Grid3x3 size={20} className="mr-2 text-purple-600" />
                                         ) : (
-                                            <Scroll size={20} className="mr-2 text-green-600" />
+                                            <FileText size={20} className="mr-2 text-gray-600" />
                                         )}
                                         <h3 className="font-semibold text-lg hover:underline">{doc.text}</h3>
                                     </div>
@@ -2558,13 +2562,22 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                     
                     <div className="flex-1">
                         <h2 className="text-2xl font-bold mb-2">{doc.text}</h2>
-                        <div className="flex items-center gap-3">
-                            <span className="text-sm px-3 py-1 rounded-full" style={{backgroundColor: theme.subtle}}>
-                                {doc.type}
-                            </span>
-                            <span className="text-2xl font-bold" style={{color: theme.accent}}>
-                                5,000 so'm
-                            </span>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm px-3 py-1 rounded-full font-semibold" style={{backgroundColor: theme.subtle}}>
+                                    {doc.type}
+                                </span>
+                                <span className="text-2xl font-bold" style={{color: theme.accent}}>
+                                    5,000 so'm
+                                </span>
+                            </div>
+                            <p className="text-sm opacity-70">
+                                {doc.type === 'Taqdimot' && '📊 PowerPoint taqdimoti (PPTX) - 6-20 slaydli professional taqdimot'}
+                                {doc.type === 'Referat' && '📝 Word referati (DOCX) - 10-15 sahifali ilmiy ish'}
+                                {(doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') && '📄 Word mustaqil ish (DOCX) - 5-10 sahifali amaliy topshiriqlar'}
+                                {doc.type === 'Test' && '📋 PDF test (PDF) - 10-50 savollik test javoblar bilan'}
+                                {doc.type === 'Krossword' && '🔲 PDF krossword (PDF) - 5-30 so\'zli krossword javoblar bilan'}
+                            </p>
                         </div>
                     </div>
                 </div>
