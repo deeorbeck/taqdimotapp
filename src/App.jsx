@@ -217,6 +217,26 @@ const api = {
             console.error("External search failed:", error);
             return []; // Return empty array on error
         }
+    },
+    // Get document by ID
+    getDocumentById: async (id) => {
+        try {
+            const response = await enhancedFetch(`${API_BASE_URL_EXTERNAL}/item/${id}`);
+            return response;
+        } catch (error) {
+            console.error(`Failed to fetch document ${id}:`, error);
+            throw error;
+        }
+    },
+    // Get total documents count
+    getDocumentsCount: async () => {
+        try {
+            const response = await enhancedFetch(`${API_BASE_URL_EXTERNAL}/items/count`);
+            return response;
+        } catch (error) {
+            console.error("Failed to fetch documents count:", error);
+            return 0;
+        }
     }
 };
 // --- End API Configuration ---
@@ -670,6 +690,28 @@ function MainApp() {
 
 // Landing Page ekrani
 const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
+    const [documentsCount, setDocumentsCount] = useState(100000); // Default: 100k
+    
+    // Realtime count olish
+    useEffect(() => {
+        const fetchCount = async () => {
+            try {
+                const count = await api.getDocumentsCount();
+                console.log('[DEBUG] Documents count from API:', count);
+                setDocumentsCount(count || 100000);
+            } catch (error) {
+                console.error('Failed to fetch documents count:', error);
+                // Default count saqlanadi
+            }
+        };
+        fetchCount();
+    }, []);
+    
+    // Format number with comma separator
+    const formatNumber = (num) => {
+        return num.toLocaleString('en-US');
+    };
+    
     return (
         <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 animate-fade-in">
             <Helmet>
@@ -821,7 +863,7 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
                 {/* Showcase Section */}
                 <section className="mb-6" aria-labelledby="showcase-heading">
                     <GlassCard theme={theme} className="text-center">
-                        <h2 id="showcase-heading" className="text-2xl font-bold mb-3">100,000+ Tayyor Hujjatlar Kutubxonasi</h2>
+                        <h2 id="showcase-heading" className="text-2xl font-bold mb-3">{formatNumber(documentsCount)}+ Tayyor Hujjatlar Kutubxonasi</h2>
                         <p className="mb-4 opacity-80">Fizika, matematika, ona tili, informatika, biologiya, kimyo, tarix, geografiya va boshqa fanlar bo'yicha tayyor taqdimotlar, referatlar va testlar. Faqat 5,000 so'mdan!</p>
                         <button 
                             onClick={() => navigateTo('showcase')}
@@ -2235,6 +2277,20 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
     const [docs, setDocs] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
+    const [documentsCount, setDocumentsCount] = useState(100000); // Default count
+    
+    // Realtime count olish
+    useEffect(() => {
+        const fetchCount = async () => {
+            try {
+                const count = await api.getDocumentsCount();
+                setDocumentsCount(count || 100000);
+            } catch (error) {
+                console.error('Failed to fetch documents count:', error);
+            }
+        };
+        fetchCount();
+    }, []);
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;
@@ -2275,7 +2331,7 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
 
             {/* Search Section */}
             <GlassCard theme={theme} className="mb-6">
-                <h2 className="text-xl font-bold mb-4">100,000+ Tayyor Hujjat</h2>
+                <h2 className="text-xl font-bold mb-4">{documentsCount.toLocaleString('en-US')}+ Tayyor Hujjat</h2>
                 <p className="mb-4 opacity-80">Sun'iy intellekt bilan yaratilgan professional hujjatlar. Har bir fayl atigi <strong style={{color: theme.accent}}>5,000 so'm</strong>!</p>
                 
                 <div className="flex gap-2">
@@ -2470,11 +2526,29 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                 console.error('Cache read error:', e);
             }
             
-            // 2. Cache'da yo'q bo'lsa, xato ko'rsatish
-            console.log('[DEBUG] No cache, showing error');
-            setIsLoading(false);
-            setError("Bu hujjat haqida ma'lumot topilmadi. Iltimos, Showcase sahifasidan qidiring yoki Telegram bot orqali yuklab oling.");
-            setDoc(null);
+            // 2. Cache'da yo'q bo'lsa, API'dan olishga harakat qilamiz
+            console.log('[DEBUG] No cache, trying API:', documentId);
+            const fetchFromAPI = async () => {
+                try {
+                    const apiDoc = await api.getDocumentById(documentId);
+                    console.log('[DEBUG] Document fetched from API:', apiDoc);
+                    setDoc(apiDoc);
+                    setIsLoading(false);
+                    // Cache'ga saqlash
+                    try {
+                        localStorage.setItem(`doc_${apiDoc.id}`, JSON.stringify(apiDoc));
+                        console.log('[DEBUG] Document cached from API:', apiDoc.id);
+                    } catch (e) {
+                        console.error('Cache save error:', e);
+                    }
+                } catch (error) {
+                    console.error('[DEBUG] API fetch failed:', error);
+                    setIsLoading(false);
+                    setError("Bu hujjat topilmadi. Iltimos, Showcase sahifasidan qidiring yoki Telegram bot orqali yuklab oling.");
+                    setDoc(null);
+                }
+            };
+            fetchFromAPI();
             return;
         }
     }, [documentId, documentData, navigateTo]);
