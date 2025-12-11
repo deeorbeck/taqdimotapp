@@ -2313,15 +2313,8 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                             <div className="flex justify-between items-start">
                                 <a 
                                     href={`/d/${doc.id}`}
-                                    onClick={(e) => {
-                                        // Ctrl+click yoki middle click bo'lsa, yangi tab'da ochilsin
-                                        if (e.ctrlKey || e.metaKey || e.button === 1) {
-                                            return; // Browser default behavior (new tab)
-                                        }
-                                        // Regular click - same tab
-                                        e.preventDefault();
-                                        navigateTo('document', { id: doc.id, doc: doc });
-                                    }}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="flex-1 cursor-pointer no-underline"
                                     style={{color: 'inherit'}}
                                 >
@@ -2477,10 +2470,11 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                 console.error('Cache read error:', e);
             }
             
-            // 2. Cache'da yo'q bo'lsa, Showcase'ga redirect
-            console.log('[DEBUG] No cache, redirecting to Showcase');
+            // 2. Cache'da yo'q bo'lsa, xato ko'rsatish
+            console.log('[DEBUG] No cache, showing error');
             setIsLoading(false);
-            navigateTo('showcase');
+            setError("Bu hujjat haqida ma'lumot topilmadi. Iltimos, Showcase sahifasidan qidiring yoki Telegram bot orqali yuklab oling.");
+            setDoc(null);
             return;
         }
     }, [documentId, documentData, navigateTo]);
@@ -2506,13 +2500,30 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                 <GlassCard theme={theme} className="text-center py-12">
                     <XCircle size={48} className="mx-auto mb-4 text-red-500" />
                     <p className="text-lg mb-4">{error || "Hujjat topilmadi"}</p>
-                    <button 
-                        onClick={() => navigateTo('showcase')}
-                        className="px-6 py-3 rounded-lg text-white font-bold"
-                        style={{backgroundColor: theme.accent}}
-                    >
-                        Barcha Hujjatlarga Qaytish
-                    </button>
+                    <p className="text-sm opacity-70 mb-6">
+                        Bu hujjat haqida ma'lumot cache'da yo'q. 
+                        Iltimos, quyidagi variantlardan birini tanlang:
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button 
+                            onClick={() => navigateTo('showcase')}
+                            className="px-6 py-3 rounded-lg text-white font-bold transition-all hover:scale-105"
+                            style={{backgroundColor: theme.accent}}
+                        >
+                            📋 Showcase'da Qidirish
+                        </button>
+                        {documentId && (
+                            <a 
+                                href={`https://t.me/taqdimot_robot?start=id_${documentId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-6 py-3 rounded-lg text-white font-bold transition-all hover:scale-105"
+                                style={{backgroundColor: '#0088cc'}}
+                            >
+                                💬 Telegram Bot'dan Olish
+                            </a>
+                        )}
+                    </div>
                 </GlassCard>
             </div>
         );
