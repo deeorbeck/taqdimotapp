@@ -2540,12 +2540,19 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                         }}>
                             <ClipboardList size={32} className="text-orange-600" />
                         </div>
-                    ) : (
+                    ) : doc.type === 'Krossword' ? (
                         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
                             background: 'linear-gradient(135deg, #a855f720, #a855f740)',
                             boxShadow: '0 0 30px #a855f730'
                         }}>
                             <Grid3x3 size={32} className="text-purple-600" />
+                        </div>
+                    ) : (
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                            background: 'linear-gradient(135deg, #ec489820, #ec489840)',
+                            boxShadow: '0 0 30px #ec489830'
+                        }}>
+                            <FileText size={32} className="text-pink-600" />
                         </div>
                     )}
                     
@@ -2566,27 +2573,87 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                     <h3 className="font-bold text-lg mb-3">Hujjat haqida:</h3>
                     <p className="text-base opacity-90 leading-relaxed mb-4">
                         <strong>{doc.text}</strong> mavzusida sun'iy intellekt (AI) yordamida yaratilgan professional {doc.type.toLowerCase()}.
-                        Barcha ma'lumotlar aniq va to'liq, hujjat darhol ishlatishga tayyor.
+                        {doc.type === 'Taqdimot' && ' 6-20 slaydli rasmli taqdimot PowerPoint formatida.'}
+                        {doc.type === 'Referat' && ' 10-15 sahifali to\'liq ilmiy referat Word formatida.'}
+                        {(doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') && ' 5-10 sahifali amaliy topshiriqlar bilan mustaqil ish Word formatida.'}
+                        {doc.type === 'Test' && ' 10-50 savollik test javoblar bilan PDF formatida.'}
+                        {doc.type === 'Krossword' && ' 5-30 so\'zli interaktiv krossword javoblar bilan PDF formatida.'}
                     </p>
                     
                     <div className="grid md:grid-cols-2 gap-4 mt-4">
                         <div className="p-4 rounded-lg" style={{backgroundColor: theme.subtle}}>
                             <h4 className="font-semibold mb-2">✨ Xususiyatlar:</h4>
                             <ul className="text-sm space-y-1 opacity-80">
-                                <li>• AI texnologiyasi bilan yaratilgan</li>
-                                <li>• Professional dizayn va formatlash</li>
-                                <li>• To'liq va aniq ma'lumotlar</li>
-                                <li>• Darhol ishlatishga tayyor</li>
+                                {doc.type === 'Taqdimot' && (
+                                    <>
+                                        <li>• 6-20 professional slaydlar</li>
+                                        <li>• Rasmli dizayn va animatsiyalar</li>
+                                        <li>• 40+ zamonaviy shablonlar</li>
+                                        <li>• PowerPoint va Google Slides'da ochiladi</li>
+                                    </>
+                                )}
+                                {doc.type === 'Referat' && (
+                                    <>
+                                        <li>• 10-15 sahifa ilmiy matn</li>
+                                        <li>• Kirish, asosiy qism, xulosa</li>
+                                        <li>• Bibliografiya va manbalar</li>
+                                        <li>• Word va Google Docs'da ochiladi</li>
+                                    </>
+                                )}
+                                {(doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') && (
+                                    <>
+                                        <li>• 5-10 sahifa amaliy topshiriqlar</li>
+                                        <li>• Nazariy va amaliy qismlar</li>
+                                        <li>• Mashqlar va misollar</li>
+                                        <li>• Word va Google Docs'da ochiladi</li>
+                                    </>
+                                )}
+                                {doc.type === 'Test' && (
+                                    <>
+                                        <li>• 10-50 savol (4 variant)</li>
+                                        <li>• Oson, o\'rtacha, qiyin darajalar</li>
+                                        <li>• To\'g\'ri javoblar bilan</li>
+                                        <li>• PDF formatda, chop qilish uchun tayyor</li>
+                                    </>
+                                )}
+                                {doc.type === 'Krossword' && (
+                                    <>
+                                        <li>• 5-30 so\'z interaktiv krossword</li>
+                                        <li>• Gorizontal va vertikal savollar</li>
+                                        <li>• Javoblar kiritilgan</li>
+                                        <li>• PDF formatda, chop qilish mumkin</li>
+                                    </>
+                                )}
                             </ul>
                         </div>
                         
                         <div className="p-4 rounded-lg" style={{backgroundColor: theme.subtle}}>
-                            <h4 className="font-semibold mb-2">📦 Format:</h4>
+                            <h4 className="font-semibold mb-2">📦 Format va Hajm:</h4>
                             <ul className="text-sm space-y-1 opacity-80">
-                                <li>• {doc.type === 'Taqdimot' ? 'PPTX (PowerPoint)' : 'PDF format'}</li>
-                                <li>• Yuqori sifat</li>
-                                <li>• Barcha qurilmalarda ochiladi</li>
-                                <li>• Tahrirlash mumkin</li>
+                                {doc.type === 'Taqdimot' && (
+                                    <>
+                                        <li>• <strong>Format:</strong> PPTX (PowerPoint)</li>
+                                        <li>• <strong>Hajm:</strong> 6-20 slayd</li>
+                                        <li>• <strong>O\'lcham:</strong> 2-5 MB</li>
+                                        <li>• <strong>Tahrirlash:</strong> To\'liq mumkin</li>
+                                    </>
+                                )}
+                                {(doc.type === 'Referat' || doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') && (
+                                    <>
+                                        <li>• <strong>Format:</strong> DOCX (Microsoft Word)</li>
+                                        <li>• <strong>Hajm:</strong> {doc.type === 'Referat' ? '10-15' : '5-10'} sahifa</li>
+                                        <li>• <strong>O\'lcham:</strong> 500KB - 2MB</li>
+                                        <li>• <strong>Tahrirlash:</strong> To\'liq mumkin</li>
+                                    </>
+                                )}
+                                {(doc.type === 'Test' || doc.type === 'Krossword') && (
+                                    <>
+                                        <li>• <strong>Format:</strong> PDF</li>
+                                        <li>• <strong>Hajm:</strong> {doc.type === 'Test' ? '10-50 savol' : '5-30 so\'z'}</li>
+                                        <li>• <strong>O\'lcham:</strong> 200KB - 1MB</li>
+                                        <li>• <strong>Chop qilish:</strong> Yuqori sifatda</li>
+                                    </>
+                                )}
                             </ul>
                         </div>
                     </div>
