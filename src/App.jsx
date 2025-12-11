@@ -613,139 +613,164 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
     return (
         <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 animate-fade-in">
             <Helmet>
-                <title>Taqdimot App - Sun'iy Intellekt bilan Taqdimot Yaratish</title>
-                <meta name="description" content="Sun'iy intellekt yordamida bir necha daqiqada professional taqdimot, referat, test va krossword yarating. 40+ shablon, rasmli taqdimotlar." />
+                <title>Taqdimot App - AI bilan Taqdimot, Referat, Test Yaratish | O'zbekiston</title>
+                <meta name="description" content="Sun'iy intellekt yordamida 1 daqiqada professional taqdimot, referat, test va krossword yarating. 40+ shablon, rasmli taqdimotlar, PDF yuklab olish. O'zbek, rus, ingliz tillarida. 100,000+ tayyor hujjatlar!" />
+                <meta name="keywords" content="taqdimot yaratish, prezentatsiya yaratish, AI taqdimot, referat yaratish, test yaratish, krossword, sun'iy intellekt, PowerPoint, PDF, o'zbekcha taqdimot, ona tili, fizika, matematika, tayyor taqdimot" />
             </Helmet>
             
             <div className="max-w-6xl w-full">
                 {/* Hero Section */}
-                <div className="text-center mb-16">
-                    <img src="/images/logo.png" alt="Taqdimot App Logo" className="w-32 h-32 rounded-full mx-auto mb-6 border-4 animate-float" style={{borderColor: theme.accent}}/>
+                <header className="text-center mb-16">
+                    <img 
+                        src="/images/logo.png" 
+                        alt="Taqdimot App - Sun'iy intellekt bilan taqdimot va hujjat yaratish dasturi logotipi" 
+                        className="w-32 h-32 rounded-full mx-auto mb-6 border-4 animate-float" 
+                        style={{borderColor: theme.accent}}
+                        width="128"
+                        height="128"
+                    />
                     <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                        Taqdimot App
+                        Taqdimot App - AI bilan Hujjat Yaratish
                     </h1>
                     <p className="text-xl md:text-2xl mb-4 opacity-90">
-                        Sun'iy Intellekt bilan Professional Hujjatlar Yaratish
+                        Sun'iy intellekt yordamida 1 daqiqada professional taqdimot, referat, test va krossword yarating
                     </p>
                     <p className="text-lg opacity-70 mb-8 max-w-2xl mx-auto">
-                        Bir necha daqiqada taqdimot, referat, test va krossword yarating. 
-                        AI yordamida sifatli kontent, 40+ professional shablon va ko'p tillar qo'llab-quvvatlash.
+                        AI texnologiyasi bilan sifatli kontent, 40+ professional shablon, rasmli taqdimotlar va 7+ til qo'llab-quvvatlash. O'zbek, rus va ingliz tillarida tayyor hujjatlar.
                     </p>
                     <button 
                         onClick={onGetStarted}
                         className="px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 active:scale-95 shadow-lg"
                         style={{backgroundColor: theme.accent}}
+                        aria-label="Taqdimot App'ga kirish va hujjat yaratishni boshlash"
                     >
-                        Boshlash <ChevronsRight className="inline ml-2" />
+                        Bepul Boshlash <ChevronsRight className="inline ml-2" aria-hidden="true" />
                     </button>
-                </div>
+                </header>
 
                 {/* Features Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16" aria-labelledby="features-heading">
+                    <h2 id="features-heading" className="sr-only">Asosiy Funksiyalar</h2>
+                    
                     <GlassCard theme={theme} className="text-center">
-                        <Presentation size={48} className="mx-auto mb-4" style={{color: theme.accent}}/>
-                        <h3 className="font-bold text-lg mb-2">Taqdimot</h3>
-                        <p className="text-sm opacity-70">6-20 slaydli professional taqdimotlar, 40+ shablon</p>
+                        <Presentation size={48} className="mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
+                        <h3 className="font-bold text-lg mb-2">Professional Taqdimotlar</h3>
+                        <p className="text-sm opacity-70">6-20 slaydli taqdimotlar, 40+ shablon, rasmli dizayn, PDF yuklab olish</p>
                     </GlassCard>
                     
                     <GlassCard theme={theme} className="text-center">
-                        <Scroll size={48} className="mx-auto mb-4" style={{color: theme.accent}}/>
-                        <h3 className="font-bold text-lg mb-2">Referat</h3>
-                        <p className="text-sm opacity-70">To'liq strukturali 15 sahifali ilmiy referatlar</p>
+                        <Scroll size={48} className="mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
+                        <h3 className="font-bold text-lg mb-2">Ilmiy Referatlar</h3>
+                        <p className="text-sm opacity-70">To'liq strukturali 15 sahifali referatlar, barcha fanlar bo'yicha</p>
                     </GlassCard>
                     
                     <GlassCard theme={theme} className="text-center">
-                        <ClipboardList size={48} className="mx-auto mb-4" style={{color: theme.accent}}/>
-                        <h3 className="font-bold text-lg mb-2">Test</h3>
-                        <p className="text-sm opacity-70">10-50 savollik testlar, 3 xil qiyinlik darajasi</p>
+                        <ClipboardList size={48} className="mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
+                        <h3 className="font-bold text-lg mb-2">Testlar Yaratish</h3>
+                        <p className="text-sm opacity-70">10-50 savollik testlar, oson/o'rtacha/qiyin darajalar, javoblar bilan</p>
                     </GlassCard>
                     
                     <GlassCard theme={theme} className="text-center">
-                        <Grid3x3 size={48} className="mx-auto mb-4" style={{color: theme.accent}}/>
-                        <h3 className="font-bold text-lg mb-2">Krossword</h3>
-                        <p className="text-sm opacity-70">5-30 so'zli interaktiv krosswordlar</p>
+                        <Grid3x3 size={48} className="mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
+                        <h3 className="font-bold text-lg mb-2">Interaktiv Krosswordlar</h3>
+                        <p className="text-sm opacity-70">5-30 so'zli krosswordlar, javoblar bilan, PDF format</p>
                     </GlassCard>
-                </div>
+                </section>
 
                 {/* Key Features */}
-                <div className="grid md:grid-cols-3 gap-6 mb-16">
+                <section className="grid md:grid-cols-3 gap-6 mb-16" aria-labelledby="benefits-heading">
+                    <h2 id="benefits-heading" className="sr-only">Afzalliklar</h2>
+                    
                     <GlassCard theme={theme}>
                         <div className="flex items-start">
-                            <Sparkles size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}}/>
+                            <Sparkles size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
                             <div>
-                                <h3 className="font-bold mb-2">AI Texnologiyasi</h3>
-                                <p className="text-sm opacity-70">Eng zamonaviy sun'iy intellekt modellari yordamida sifatli kontent yaratish</p>
+                                <h3 className="font-bold mb-2">Zamonaviy AI Texnologiyasi</h3>
+                                <p className="text-sm opacity-70">GPT asosidagi sun'iy intellekt modellari yordamida yuqori sifatli kontent avtomatik yaratish</p>
                             </div>
                         </div>
                     </GlassCard>
                     
                     <GlassCard theme={theme}>
                         <div className="flex items-start">
-                            <Zap size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}}/>
+                            <Zap size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
                             <div>
-                                <h3 className="font-bold mb-2">Tezkor Ishlash</h3>
-                                <p className="text-sm opacity-70">Bir necha daqiqada tayyor hujjat, PDF yuklab olish</p>
+                                <h3 className="font-bold mb-2">1 Daqiqada Tayyor</h3>
+                                <p className="text-sm opacity-70">Tez ishlash, avtomatik formatlash, PDF/PPTX yuklash. Vaqtingizni tejang!</p>
                             </div>
                         </div>
                     </GlassCard>
                     
                     <GlassCard theme={theme}>
                         <div className="flex items-start">
-                            <Globe size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}}/>
+                            <Globe size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
                             <div>
-                                <h3 className="font-bold mb-2">Ko'p Tillar</h3>
-                                <p className="text-sm opacity-70">O'zbek, rus, ingliz va boshqa 7+ til qo'llab-quvvatlash</p>
+                                <h3 className="font-bold mb-2">Ko'p Tillar Qo'llab-quvvatlash</h3>
+                                <p className="text-sm opacity-70">O'zbek, Qoraqalpoq, Rus, Ingliz, Nemis, Fransuz, Turk tillarida hujjat yaratish</p>
                             </div>
                         </div>
                     </GlassCard>
-                </div>
+                </section>
 
                 {/* Showcase Section */}
-                <GlassCard theme={theme} className="text-center mb-6">
-                    <h2 className="text-2xl font-bold mb-3">100,000+ Tayyor Hujjatlar</h2>
-                    <p className="mb-4 opacity-80">Fizika, matematika, ona tili va boshqa fanlar bo'yicha tayyor taqdimotlar, referatlar, testlar!</p>
-                    <button 
-                        onClick={() => navigateTo('showcase')}
-                        className="px-8 py-3 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 active:scale-95"
-                        style={{backgroundColor: theme.accent}}
-                    >
-                        Barcha Hujjatlarni Ko'rish
-                    </button>
-                </GlassCard>
+                <section className="mb-6" aria-labelledby="showcase-heading">
+                    <GlassCard theme={theme} className="text-center">
+                        <h2 id="showcase-heading" className="text-2xl font-bold mb-3">100,000+ Tayyor Hujjatlar Kutubxonasi</h2>
+                        <p className="mb-4 opacity-80">Fizika, matematika, ona tili, informatika, biologiya, kimyo, tarix, geografiya va boshqa fanlar bo'yicha tayyor taqdimotlar, referatlar va testlar. Faqat 5,000 so'mdan!</p>
+                        <button 
+                            onClick={() => navigateTo('showcase')}
+                            className="px-8 py-3 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 active:scale-95"
+                            style={{backgroundColor: theme.accent}}
+                            aria-label="100,000+ tayyor hujjatlar kutubxonasini ko'rish"
+                        >
+                            Tayyor Hujjatlarni Ko'rish
+                        </button>
+                    </GlassCard>
+                </section>
 
                 {/* CTA Section */}
-                <GlassCard theme={theme} className="text-center">
-                    <h2 className="text-3xl font-bold mb-4">Tayyor hujjatlarni hoziroq yarating!</h2>
-                    <p className="mb-6 opacity-80">Telegram bot orqali kod olib ilovaga kiring</p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a 
-                            href="https://t.me/taqdimot_robot?start=code" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="px-6 py-3 rounded-xl text-white font-bold transition-transform hover:scale-105"
-                            style={{backgroundColor: theme.accent}}
-                        >
-                            Kodni Olish
-                        </a>
-                        <button 
-                            onClick={onGetStarted}
-                            className="px-6 py-3 rounded-xl font-bold transition-transform hover:scale-105 border-2"
-                            style={{borderColor: theme.accent, color: theme.accent}}
-                        >
-                            Kirish
-                        </button>
-                    </div>
-                </GlassCard>
+                <section className="mb-6" aria-labelledby="cta-heading">
+                    <GlassCard theme={theme} className="text-center">
+                        <h2 id="cta-heading" className="text-3xl font-bold mb-4">Hoziroq O'z Hujjatingizni Yarating!</h2>
+                        <p className="mb-6 opacity-80">Telegram bot orqali 6 xonali kodni oling va bepul kirish imkoniyatidan foydalaning</p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <a 
+                                href="https://t.me/taqdimot_robot?start=code" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="px-6 py-3 rounded-xl text-white font-bold transition-transform hover:scale-105"
+                                style={{backgroundColor: theme.accent}}
+                                aria-label="Telegram bot'dan kirish kodni olish"
+                            >
+                                Kodni Olish
+                            </a>
+                            <button 
+                                onClick={onGetStarted}
+                                className="px-6 py-3 rounded-xl font-bold transition-transform hover:scale-105 border-2"
+                                style={{borderColor: theme.accent, color: theme.accent}}
+                                aria-label="Mavjud kod bilan ilovaga kirish"
+                            >
+                                Kirish
+                            </button>
+                        </div>
+                    </GlassCard>
+                </section>
 
                 {/* Footer */}
-                <div className="text-center mt-12 opacity-60 text-sm">
+                <footer className="text-center mt-12 opacity-60 text-sm">
                     <p>© 2025 Taqdimot App. Barcha huquqlar himoyalangan.</p>
-                    <p className="mt-2">
-                        <a href="https://t.me/taqdimot_robot" target="_blank" rel="noopener noreferrer" className="hover:opacity-100">
+                    <nav className="mt-2" aria-label="Ijtimoiy tarmoqlar">
+                        <a 
+                            href="https://t.me/taqdimot_robot" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="hover:opacity-100"
+                            aria-label="Telegram Bot - Taqdimot App rasmiy bot"
+                        >
                             Telegram Bot
                         </a>
-                    </p>
-                </div>
+                    </nav>
+                </footer>
             </div>
         </div>
     );
