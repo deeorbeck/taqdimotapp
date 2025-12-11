@@ -489,6 +489,8 @@ function MainApp() {
         return <SupportScreen navigateTo={navigateTo} theme={theme} />;
       case 'faq':
         return <FaqScreen navigateTo={navigateTo} theme={theme} />;
+      case 'showcase':
+        return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
       default:
         setActiveScreen('hujjatlarim');
         return null;
@@ -516,9 +518,13 @@ function MainApp() {
                 </div>
             )}
             <div className="relative z-10 h-full flex flex-col">
-                {!isLoggedIn ? (
+                {activeScreen === 'showcase' ? (
+                    <main className="flex-grow p-4 pb-24">
+                        <ShowcaseScreen navigateTo={navigateTo} theme={theme} />
+                    </main>
+                ) : !isLoggedIn ? (
                     showLandingPage ? (
-                        <LandingPage theme={theme} onGetStarted={() => setShowLandingPage(false)} />
+                        <LandingPage theme={theme} onGetStarted={() => setShowLandingPage(false)} navigateTo={navigateTo} />
                     ) : (
                         <LoginScreen theme={theme} />
                     )
@@ -527,7 +533,7 @@ function MainApp() {
                     <main className="flex-grow p-4 pb-24">
                     {renderScreen()}
                     </main>
-                    {activeScreen !== 'support' && activeScreen !== 'faq' && activeScreen !== 'status' && <BottomNav activeScreen={activeScreen} navigateTo={navigateTo} theme={theme} />}
+                    {activeScreen !== 'support' && activeScreen !== 'faq' && activeScreen !== 'status' && activeScreen !== 'showcase' && <BottomNav activeScreen={activeScreen} navigateTo={navigateTo} theme={theme} />}
                 </>
                 )}
             </div>
@@ -537,7 +543,7 @@ function MainApp() {
 }
 
 // Landing Page ekrani
-const LandingPage = ({ theme, onGetStarted }) => {
+const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
     return (
         <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 animate-fade-in">
             <Helmet>
@@ -627,6 +633,19 @@ const LandingPage = ({ theme, onGetStarted }) => {
                         </div>
                     </GlassCard>
                 </div>
+
+                {/* Showcase Section */}
+                <GlassCard theme={theme} className="text-center mb-6">
+                    <h2 className="text-2xl font-bold mb-3">100,000+ Tayyor Hujjatlar</h2>
+                    <p className="mb-4 opacity-80">Fizika, matematika, ona tili va boshqa fanlar bo'yicha tayyor taqdimotlar, referatlar, testlar!</p>
+                    <button 
+                        onClick={() => navigateTo('showcase')}
+                        className="px-8 py-3 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 active:scale-95"
+                        style={{backgroundColor: theme.accent}}
+                    >
+                        Barcha Hujjatlarni Ko'rish
+                    </button>
+                </GlassCard>
 
                 {/* CTA Section */}
                 <GlassCard theme={theme} className="text-center">
@@ -1968,6 +1987,163 @@ const SupportScreen = ({ navigateTo, theme }) => {
                 <GlassCard theme={theme}><h3 className="text-lg font-semibold mb-2">Rasmiy yangiliklar kanali</h3><p className="opacity-80 mb-3">Barcha yangiliklar, yangilanishlar va maxsus takliflardan xabardor bo'lish uchun kanalimizga obuna bo'ling.</p><a href="https://t.me/taqdimotnews" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center w-full p-3 rounded-lg transition-colors" style={{backgroundColor: theme.subtle}}><span>Taqdimot Robot | News</span><ChevronsRight size={20} style={{color: theme.accent}}/></a></GlassCard>
                 <GlassCard theme={theme}><h3 className="text-lg font-semibold mb-2">Admin & Dasturchi</h3><p className="opacity-80 mb-3">Texnik nosozliklar yoki hamkorlik bo'yicha to'g'ridan-to'g'ri murojaat uchun.</p><a href="https://t.me/webtechgo" target="_blank" rel="noopener noreferrer" className="flex justify-between items-center w-full p-3 rounded-lg transition-colors" style={{backgroundColor: theme.subtle}}><span> @webtechgo</span><ChevronsRight size={20} style={{color: theme.accent}}/></a></GlassCard>
             </div>
+        </div>
+    );
+};
+
+// Showcase ekrani - Public hujjatlar ko'rsatish
+const ShowcaseScreen = ({ navigateTo, theme }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [docs, setDocs] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
+
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) return;
+        
+        setIsLoading(true);
+        setHasSearched(true);
+        try {
+            const results = await api.searchExternal(searchQuery, null, 1, 10);
+            setDocs(results || []);
+        } catch (error) {
+            console.error("Qidiruv xatosi:", error);
+            setDocs([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
+    return (
+        <div className="animate-fade-in">
+            <Helmet>
+                <title>Barcha Hujjatlar - 100,000+ Taqdimot, Referat, Test | Taqdimot App</title>
+                <meta name="description" content="100,000+ tayyor hujjatlar: taqdimotlar, referatlar, testlar va krosswordlar. Sun'iy intellekt, fizika, matematika, ona tili va boshqa fanlar bo'yicha. Faqat 5000 so'mdan!" />
+                <meta name="keywords" content="taqdimot yuklab olish, referat yuklab olish, test yuklab olish, tayyor taqdimotlar, tayyor referatlar, fizika, matematika, ona tili, sun'iy intellekt" />
+            </Helmet>
+
+            <header className="flex items-center mb-6">
+                <button onClick={() => navigateTo('hujjatlarim')} className="p-2 mr-4 rounded-full" style={{backgroundColor: theme.subtle}}>
+                    <ArrowLeft size={20} />
+                </button>
+                <h1 className="text-2xl font-bold">Barcha Hujjatlar</h1>
+            </header>
+
+            {/* Search Section */}
+            <GlassCard theme={theme} className="mb-6">
+                <h2 className="text-xl font-bold mb-4">100,000+ Tayyor Hujjat</h2>
+                <p className="mb-4 opacity-80">Sun'iy intellekt bilan yaratilgan professional hujjatlar. Har bir fayl atigi <strong style={{color: theme.accent}}>5,000 so'm</strong>!</p>
+                
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Mavzu kiriting (masalan: fizika, matematika, ona tili...)"
+                        className="flex-1 p-3 rounded-lg border bg-transparent"
+                        style={{borderColor: theme.subtle}}
+                    />
+                    <button
+                        onClick={handleSearch}
+                        disabled={isLoading || !searchQuery.trim()}
+                        className="px-6 py-3 rounded-lg text-white font-bold transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center"
+                        style={{backgroundColor: theme.accent}}
+                    >
+                        {isLoading ? <Loader className="animate-spin" size={20} /> : <Search size={20} />}
+                    </button>
+                </div>
+            </GlassCard>
+
+            {/* Results */}
+            {isLoading ? (
+                <div className="flex justify-center items-center py-12">
+                    <Loader className="animate-spin" size={32} style={{color: theme.accent}}/>
+                    <span className="ml-3 text-lg">Qidirilmoqda...</span>
+                </div>
+            ) : hasSearched && docs.length > 0 ? (
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold mb-4">Topildi: {docs.length} ta hujjat</h3>
+                    {docs.map((doc) => (
+                        <GlassCard key={doc.id} theme={theme}>
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <div className="flex items-center mb-2">
+                                        {doc.type === 'Taqdimot' ? (
+                                            <Presentation size={20} className="mr-2 text-blue-600" />
+                                        ) : doc.type === 'Test' ? (
+                                            <ClipboardList size={20} className="mr-2 text-orange-600" />
+                                        ) : doc.type === 'Krossword' ? (
+                                            <Grid3x3 size={20} className="mr-2 text-purple-600" />
+                                        ) : (
+                                            <Scroll size={20} className="mr-2 text-green-600" />
+                                        )}
+                                        <h3 className="font-semibold text-lg">{doc.text}</h3>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-2">
+                                        <span className="text-sm px-3 py-1 rounded-full" style={{backgroundColor: theme.subtle}}>
+                                            {doc.type}
+                                        </span>
+                                        <span className="text-lg font-bold" style={{color: theme.accent}}>
+                                            5,000 so'm
+                                        </span>
+                                    </div>
+                                </div>
+                                <a 
+                                    href={`https://t.me/taqdimot_robot?start=id_${doc.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-4 py-2 rounded-lg text-white font-medium transition-transform hover:scale-105 active:scale-95 flex items-center gap-2 ml-4"
+                                    style={{backgroundColor: theme.accent}}
+                                >
+                                    <Download size={18} />
+                                    Yuklab olish
+                                </a>
+                            </div>
+                        </GlassCard>
+                    ))}
+                </div>
+            ) : hasSearched && docs.length === 0 ? (
+                <GlassCard theme={theme} className="text-center py-12">
+                    <XCircle size={48} className="mx-auto mb-4 opacity-60" />
+                    <p className="text-lg opacity-80">Bu mavzu bo'yicha hujjat topilmadi.</p>
+                    <p className="text-sm opacity-60 mt-2">Boshqa mavzu bilan qidirib ko'ring.</p>
+                </GlassCard>
+            ) : (
+                <GlassCard theme={theme} className="text-center py-12">
+                    <Search size={48} className="mx-auto mb-4 opacity-60" />
+                    <p className="text-lg opacity-80">Mavzu kiriting va qidiring</p>
+                    <p className="text-sm opacity-60 mt-2">100,000+ tayyor hujjatlar orasidan toping!</p>
+                </GlassCard>
+            )}
+
+            {/* Popular Topics */}
+            {!hasSearched && (
+                <GlassCard theme={theme} className="mt-6">
+                    <h3 className="font-bold mb-3">Mashhur mavzular:</h3>
+                    <div className="flex flex-wrap gap-2">
+                        {['Fizika', 'Matematika', 'Ona tili', 'Informatika', 'Biologiya', 'Kimyo', 'Tarix', 'Geografiya'].map(topic => (
+                            <button
+                                key={topic}
+                                onClick={() => {
+                                    setSearchQuery(topic);
+                                    setTimeout(() => handleSearch(), 100);
+                                }}
+                                className="px-4 py-2 rounded-lg transition-all hover:scale-105"
+                                style={{backgroundColor: theme.subtle}}
+                            >
+                                {topic}
+                            </button>
+                        ))}
+                    </div>
+                </GlassCard>
+            )}
         </div>
     );
 };
