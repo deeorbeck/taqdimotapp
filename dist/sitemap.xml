@@ -17,6 +17,14 @@
     </image:image>
   </url>
 
+  <!-- Login Page -->
+  <url>
+    <loc>https://taqdimot.ismailov.uz/login</loc>
+    <lastmod>2025-12-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Showcase Page - 100,000+ Documents -->
   <url>
     <loc>https://taqdimot.ismailov.uz/showcase</loc>

@@ -384,8 +384,7 @@ export default function App() {
 function MainApp() {
   const { isLoggedIn, logout, isLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [showLandingPage, setShowLandingPage] = useState(true);
-  const [activeScreen, setActiveScreen] = useState('hujjatlarim');
+  const [activeScreen, setActiveScreen] = useState(isLoggedIn ? 'hujjatlarim' : 'landing');
   const [presentationSettings, setPresentationSettings] = useState(null);
   const [generationTask, setGenerationTask] = useState(null);
   const [allDocs, setAllDocs] = useState(() => {
@@ -491,8 +490,16 @@ function MainApp() {
         return <FaqScreen navigateTo={navigateTo} theme={theme} />;
       case 'showcase':
         return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
+      case 'landing':
+        return <LandingPage theme={theme} onGetStarted={() => navigateTo('login')} navigateTo={navigateTo} />;
+      case 'login':
+        return <LoginScreen theme={theme} navigateTo={navigateTo} />;
       default:
-        setActiveScreen('hujjatlarim');
+        if (isLoggedIn) {
+          setActiveScreen('hujjatlarim');
+        } else {
+          setActiveScreen('landing');
+        }
         return null;
     }
   };
@@ -518,23 +525,21 @@ function MainApp() {
                 </div>
             )}
             <div className="relative z-10 h-full flex flex-col">
-                {activeScreen === 'showcase' ? (
+                {activeScreen === 'showcase' || activeScreen === 'landing' || activeScreen === 'login' ? (
                     <main className="flex-grow p-4 pb-24">
-                        <ShowcaseScreen navigateTo={navigateTo} theme={theme} />
+                        {renderScreen()}
                     </main>
-                ) : !isLoggedIn ? (
-                    showLandingPage ? (
-                        <LandingPage theme={theme} onGetStarted={() => setShowLandingPage(false)} navigateTo={navigateTo} />
-                    ) : (
-                        <LoginScreen theme={theme} />
-                    )
-                ) : (
+                ) : isLoggedIn ? (
                 <>
                     <main className="flex-grow p-4 pb-24">
                     {renderScreen()}
                     </main>
-                    {activeScreen !== 'support' && activeScreen !== 'faq' && activeScreen !== 'status' && activeScreen !== 'showcase' && <BottomNav activeScreen={activeScreen} navigateTo={navigateTo} theme={theme} />}
+                    {activeScreen !== 'support' && activeScreen !== 'faq' && activeScreen !== 'status' && <BottomNav activeScreen={activeScreen} navigateTo={navigateTo} theme={theme} />}
                 </>
+                ) : (
+                    <main className="flex-grow p-4 pb-24">
+                        <LandingPage theme={theme} onGetStarted={() => navigateTo('login')} navigateTo={navigateTo} />
+                    </main>
                 )}
             </div>
         </div>
@@ -686,7 +691,7 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
 };
 
 // Login ekrani
-const LoginScreen = ({ theme }) => {
+const LoginScreen = ({ theme, navigateTo }) => {
     const { login } = useAuth();
     const [code, setCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -711,6 +716,21 @@ const LoginScreen = ({ theme }) => {
 
     return (
         <div className="w-full h-screen flex items-center justify-center p-4 animate-fade-in">
+            <Helmet>
+                <title>Kirish - Taqdimot App</title>
+                <meta name="description" content="Taqdimot App'ga kirish. Telegram bot orqali 6 xonali kod oling va ilovaga kiring." />
+            </Helmet>
+            
+            {navigateTo && (
+                <button 
+                    onClick={() => navigateTo('landing')} 
+                    className="fixed top-4 left-4 p-3 rounded-full backdrop-blur-lg z-20 transition-transform hover:scale-110"
+                    style={{backgroundColor: theme.card}}
+                >
+                    <ArrowLeft size={24} />
+                </button>
+            )}
+            
             <GlassCard theme={theme} className="w-full max-w-sm text-center">
                 <img src="/images/logo.png" alt="App Logo" className="w-24 h-24 rounded-full mx-auto mb-4 border-4" style={{borderColor: theme.accent}}/>
                 <h1 className="text-2xl font-bold mb-2" style={{color: theme.accent}}>Taqdimot App</h1>
