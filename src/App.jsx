@@ -2189,8 +2189,8 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
         <div className="animate-fade-in">
             <Helmet>
                 <title>Barcha Hujjatlar - 100,000+ Taqdimot, Referat, Test | Taqdimot App</title>
-                <meta name="description" content="100,000+ tayyor hujjatlar: taqdimotlar, referatlar, testlar va krosswordlar. Sun'iy intellekt, fizika, matematika, ona tili va boshqa fanlar bo'yicha. Faqat 5000 so'mdan!" />
-                <meta name="keywords" content="taqdimot yuklab olish, referat yuklab olish, test yuklab olish, tayyor taqdimotlar, tayyor referatlar, fizika, matematika, ona tili, sun'iy intellekt" />
+                <meta name="description" content="100,000+ tayyor hujjatlar: taqdimotlar, referatlar, testlar va krosswordlar. Fizika, matematika, ona tili, informatika, biologiya, kimyo, tarix, geografiya, ingliz tili, adabiyot, astronomiya bo'yicha. Faqat 5000 so'mdan!" />
+                <meta name="keywords" content="fizika taqdimot, matematika taqdimot, ona tili taqdimot, informatika taqdimot, biologiya taqdimot, kimyo taqdimot, tarix taqdimot, geografiya taqdimot, fizika referat, matematika referat, ona tili referat, taqdimot yuklab olish, referat yuklab olish, test yuklab olish, tayyor taqdimotlar, tayyor referatlar, sun'iy intellekt, AI taqdimot" />
             </Helmet>
 
             <header className="flex items-center mb-6">
@@ -2306,6 +2306,25 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                                 {topic}
                             </button>
                         ))}
+                    </div>
+                    
+                    {/* SEO Content - Google uchun ko'rinadigan */}
+                    <div className="mt-6 text-sm opacity-70 leading-relaxed">
+                        <p>
+                            Bizda <strong>fizika</strong>, <strong>matematika</strong>, <strong>ona tili</strong>, <strong>informatika</strong>, 
+                            <strong> biologiya</strong>, <strong>kimyo</strong>, <strong>tarix</strong>, <strong>geografiya</strong>, 
+                            <strong> ingliz tili</strong>, <strong>adabiyot</strong>, <strong>astronomiya</strong> va boshqa fanlar bo'yicha 
+                            100,000+ dan ortiq tayyor taqdimotlar, referatlar, testlar va krosswordlar mavjud.
+                        </p>
+                        <p className="mt-3">
+                            Har bir hujjat sun'iy intellekt (AI) yordamida professional darajada yaratilgan. 
+                            Fizika qonunlari, matematika formulalari, ona tili qoidalari, informatika algoritmlari va 
+                            boshqa barcha mavzular bo'yicha to'liq, sifatli materiallar olishingiz mumkin.
+                        </p>
+                        <p className="mt-3">
+                            <strong>Faqat 5,000 so'm</strong> evaziga istalgan hujjatni yuklab olish va darhol 
+                            ishlatishingiz mumkin. PDF, PPTX formatlarida tayyor taqdimotlar va referatlar.
+                        </p>
                     </div>
                 </GlassCard>
             )}
