@@ -415,6 +415,7 @@ function MainApp() {
   
   const [activeScreen, setActiveScreen] = useState(getInitialScreen());
   const [documentId, setDocumentId] = useState(getDocumentIdFromUrl());
+  const [documentData, setDocumentData] = useState(null);
   const [presentationSettings, setPresentationSettings] = useState(null);
   const [generationTask, setGenerationTask] = useState(null);
   const [allDocs, setAllDocs] = useState(() => {
@@ -519,8 +520,13 @@ function MainApp() {
     if (screen === 'status') {
       setGenerationTask(settings);
     }
-    if (screen === 'document' && settings && settings.id) {
-      setDocumentId(settings.id);
+    if (screen === 'document' && settings) {
+      if (settings.id) {
+        setDocumentId(settings.id);
+      }
+      if (settings.doc) {
+        setDocumentData(settings.doc);
+      }
     }
     
     // URL'ni yangilash
@@ -575,8 +581,8 @@ function MainApp() {
       case 'showcase':
         return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
       case 'document':
-        if (!documentId) return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
-        return <DocumentDetailScreen documentId={documentId} navigateTo={navigateTo} theme={theme} />;
+        if (!documentId && !documentData) return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
+        return <DocumentDetailScreen documentId={documentId} documentData={documentData} navigateTo={navigateTo} theme={theme} />;
       case 'landing':
         return <LandingPage theme={theme} onGetStarted={() => navigateTo('login')} navigateTo={navigateTo} />;
       case 'login':
@@ -2262,9 +2268,9 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold mb-4">Topildi: {docs.length} ta hujjat</h3>
                     {docs.map((doc) => (
-                        <GlassCard key={doc.id} theme={theme}>
+                        <GlassCard key={doc.id} theme={theme} className="cursor-pointer hover:scale-[1.01] transition-all">
                             <div className="flex justify-between items-start">
-                                <div className="flex-1">
+                                <div className="flex-1" onClick={() => navigateTo('document', { id: doc.id, doc: doc })}>
                                     <div className="flex items-center mb-2">
                                         {doc.type === 'Taqdimot' ? (
                                             <Presentation size={20} className="mr-2 text-blue-600" />
@@ -2275,7 +2281,7 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                                         ) : (
                                             <Scroll size={20} className="mr-2 text-green-600" />
                                         )}
-                                        <h3 className="font-semibold text-lg">{doc.text}</h3>
+                                        <h3 className="font-semibold text-lg hover:underline">{doc.text}</h3>
                                     </div>
                                     <div className="flex items-center gap-3 mt-2">
                                         <span className="text-sm px-3 py-1 rounded-full" style={{backgroundColor: theme.subtle}}>
@@ -2292,6 +2298,7 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                                     rel="noopener noreferrer"
                                     className="px-4 py-2 rounded-lg text-white font-medium transition-transform hover:scale-105 active:scale-95 flex items-center gap-2 ml-4"
                                     style={{backgroundColor: theme.accent}}
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     <Download size={18} />
                                     Yuklab olish
@@ -2359,22 +2366,31 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
 };
 
 // Document Detail ekrani - Alohida hujjat sahifasi (SEO uchun)
-const DocumentDetailScreen = ({ documentId, navigateTo, theme }) => {
-    const [doc, setDoc] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) => {
+    const [doc, setDoc] = useState(documentData || null);
+    const [isLoading, setIsLoading] = useState(!documentData);
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        // Agar documentData props orqali kelgan bo'lsa, API'dan yuklash kerak emas
+        if (documentData) {
+            setDoc(documentData);
+            setIsLoading(false);
+            return;
+        }
+
+        // Agar faqat documentId bor bo'lsa, API'dan yuklash (Google'dan kelganlar uchun)
         const fetchDocument = async () => {
             setIsLoading(true);
             setError(null);
             try {
-                // searchExternal API bilan ID bo'yicha qidirish
+                // searchExternal API bilan text qidirish (ID emas!)
+                // Bu Google'dan kelgan userlar uchun - hali ishlamaydi, backend API kerak
                 const results = await api.searchExternal(documentId, null, 1, 1);
                 if (results && results.length > 0) {
                     setDoc(results[0]);
                 } else {
-                    setError("Hujjat topilmadi");
+                    setError("Hujjat topilmadi. Iltimos Barcha Hujjatlar sahifasidan qidiring.");
                 }
             } catch (error) {
                 console.error("Hujjat yuklashda xatolik:", error);
@@ -2384,10 +2400,10 @@ const DocumentDetailScreen = ({ documentId, navigateTo, theme }) => {
             }
         };
 
-        if (documentId) {
+        if (documentId && !documentData) {
             fetchDocument();
         }
-    }, [documentId]);
+    }, [documentId, documentData]);
 
     if (isLoading) {
         return (
