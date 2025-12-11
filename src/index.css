@@ -2,6 +2,12 @@
  @tailwind components;
  @tailwind utilities;
 
+/* Mobile safe area support */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-top: constant(safe-area-inset-top);
+}
+
  @keyframes blob {
   0% { transform: translate(0px, 0px) scale(1); }
   33% { transform: translate(30px, -50px) scale(1.1); }

@@ -385,12 +385,14 @@ function MainApp() {
   const { isLoggedIn, logout, isLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(true);
   
-  // URL'dan initial screen'ni olish
+  // URL'dan initial screen va document ID olish
   const getInitialScreen = () => {
     const path = window.location.pathname;
     if (path === '/login') return 'login';
     if (path === '/showcase') return 'showcase';
     if (path === '/landing' || path === '/') return 'landing';
+    // Document detail page: /d/:id
+    if (path.startsWith('/d/')) return 'document';
     if (isLoggedIn) {
       if (path === '/hujjatlarim') return 'hujjatlarim';
       if (path === '/yaratish') return 'yaratish';
@@ -402,7 +404,17 @@ function MainApp() {
     return 'landing';
   };
   
+  const getDocumentIdFromUrl = () => {
+    const path = window.location.pathname;
+    if (path.startsWith('/d/')) {
+      const docId = path.split('/')[2];
+      return docId || null;
+    }
+    return null;
+  };
+  
   const [activeScreen, setActiveScreen] = useState(getInitialScreen());
+  const [documentId, setDocumentId] = useState(getDocumentIdFromUrl());
   const [presentationSettings, setPresentationSettings] = useState(null);
   const [generationTask, setGenerationTask] = useState(null);
   const [allDocs, setAllDocs] = useState(() => {
@@ -507,6 +519,9 @@ function MainApp() {
     if (screen === 'status') {
       setGenerationTask(settings);
     }
+    if (screen === 'document' && settings && settings.id) {
+      setDocumentId(settings.id);
+    }
     
     // URL'ni yangilash
     const pathMap = {
@@ -522,7 +537,15 @@ function MainApp() {
       'status': '/status'
     };
     
-    const newPath = pathMap[screen] || '/';
+    let newPath = pathMap[screen];
+    
+    // Document detail page uchun special URL
+    if (screen === 'document' && settings && settings.id) {
+      newPath = `/d/${settings.id}`;
+    } else if (!newPath) {
+      newPath = '/';
+    }
+    
     if (window.location.pathname !== newPath) {
       window.history.pushState({ screen }, '', newPath);
     }
@@ -551,6 +574,9 @@ function MainApp() {
         return <FaqScreen navigateTo={navigateTo} theme={theme} />;
       case 'showcase':
         return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
+      case 'document':
+        if (!documentId) return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
+        return <DocumentDetailScreen documentId={documentId} navigateTo={navigateTo} theme={theme} />;
       case 'landing':
         return <LandingPage theme={theme} onGetStarted={() => navigateTo('login')} navigateTo={navigateTo} />;
       case 'login':
@@ -587,18 +613,18 @@ function MainApp() {
             )}
             <div className="relative z-10 h-full flex flex-col">
                 {activeScreen === 'showcase' || activeScreen === 'landing' || activeScreen === 'login' ? (
-                    <main className="flex-grow p-4 pb-24">
+                    <main className="flex-grow p-4 pt-6 pb-24">
                         {renderScreen()}
                     </main>
                 ) : isLoggedIn ? (
                 <>
-                    <main className="flex-grow p-4 pb-24">
+                    <main className="flex-grow p-4 pt-6 pb-24">
                     {renderScreen()}
                     </main>
                     {activeScreen !== 'support' && activeScreen !== 'faq' && activeScreen !== 'status' && <BottomNav activeScreen={activeScreen} navigateTo={navigateTo} theme={theme} />}
                 </>
                 ) : (
-                    <main className="flex-grow p-4 pb-24">
+                    <main className="flex-grow p-4 pt-6 pb-24">
                         <LandingPage theme={theme} onGetStarted={() => navigateTo('login')} navigateTo={navigateTo} />
                     </main>
                 )}
