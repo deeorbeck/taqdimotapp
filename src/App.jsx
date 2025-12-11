@@ -690,7 +690,7 @@ function MainApp() {
 
 // Landing Page ekrani
 const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
-    const [documentsCount, setDocumentsCount] = useState(100000); // Default: 100k
+    const [documentsCount, setDocumentsCount] = useState(null); // null - API dan kelguncha
     
     // Realtime count olish
     useEffect(() => {
@@ -701,7 +701,7 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
                 setDocumentsCount(count || 100000);
             } catch (error) {
                 console.error('Failed to fetch documents count:', error);
-                // Default count saqlanadi
+                setDocumentsCount(100000); // Xatolik bo'lsa default
             }
         };
         fetchCount();
@@ -722,11 +722,11 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
             
             <div className="max-w-6xl w-full">
                 {/* Hero Section */}
-                <header className="text-center mb-24">
+                <header className="text-center mb-12 md:mb-24">
                     <img 
                         src="/images/logo.png" 
                         alt="Taqdimot App - Sun'iy intellekt bilan taqdimot va hujjat yaratish dasturi logotipi" 
-                        className="w-36 h-36 rounded-full mx-auto mb-8 border-4 animate-float" 
+                        className="w-24 h-24 md:w-36 md:h-36 rounded-full mx-auto mb-6 md:mb-8 border-4 animate-float" 
                         style={{
                             borderColor: theme.accent,
                             boxShadow: `0 0 60px ${theme.accent}80`
@@ -734,21 +734,21 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
                         width="144"
                         height="144"
                     />
-                    <h1 className="text-6xl md:text-7xl font-extrabold mb-6 text-white leading-tight">
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-4 md:mb-6 text-white leading-tight px-2">
                         Taqdimot App <br/>
                         <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                            AI bilan Hujjat Yaratish
+                            AI bilan <br className="md:hidden"/>Hujjat Yaratish
                         </span>
                     </h1>
-                    <p className="text-xl md:text-2xl mb-6 text-gray-200 font-medium max-w-3xl mx-auto">
+                    <p className="text-base md:text-xl lg:text-2xl mb-4 md:mb-6 text-gray-200 font-medium max-w-3xl mx-auto px-4">
                         Sun'iy intellekt yordamida 1 daqiqada professional taqdimot, referat, test va krossword yarating
                     </p>
-                    <p className="text-base md:text-lg text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-                        AI texnologiyasi bilan sifatli kontent, 40+ professional shablon, rasmli taqdimotlar va 7+ til qo'llab-quvvatlash. O'zbek, rus va ingliz tillarida tayyor hujjatlar.
+                    <p className="text-sm md:text-base lg:text-lg text-gray-300 mb-6 md:mb-10 max-w-2xl mx-auto leading-relaxed px-4">
+                        AI texnologiyasi bilan sifatli kontent, 40+ professional shablon, rasmli taqdimotlar va 7+ til qo'llab-quvvatlash
                     </p>
                     <button 
                         onClick={onGetStarted}
-                        className="px-10 py-5 rounded-2xl text-white font-bold text-xl transition-all duration-300 hover:scale-110 active:scale-95 relative overflow-hidden group"
+                        className="px-8 md:px-10 py-4 md:py-5 rounded-2xl text-white font-bold text-lg md:text-xl transition-all duration-300 hover:scale-110 active:scale-95 relative overflow-hidden group"
                         style={{
                             backgroundColor: theme.accent,
                             boxShadow: `0 0 40px ${theme.accent}80, 0 0 80px ${theme.accent}40`
@@ -760,127 +760,157 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
                     </button>
                 </header>
 
+                {/* Documents Counter Section */}
+                <section className="mb-12 md:mb-20" aria-labelledby="counter-heading">
+                    <GlassCard theme={theme} className="text-center relative overflow-hidden">
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full blur-3xl animate-blob"></div>
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+                        </div>
+                        <div className="relative z-10">
+                            <div className="mb-4">
+                                <FileText size={48} className="md:hidden mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
+                                <FileText size={64} className="hidden md:block mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
+                            </div>
+                            <h2 id="counter-heading" className="text-xl md:text-2xl font-bold mb-6 text-gray-200">
+                                Tayyor Hujjatlar Kutubxonasi
+                            </h2>
+                            {documentsCount === null ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader className="animate-spin" size={48} style={{color: theme.accent}} />
+                                </div>
+                            ) : (
+                                <AnimatedCounter target={documentsCount} duration={2500} theme={theme} />
+                            )}
+                            <p className="text-sm md:text-base text-gray-300 mt-6 max-w-2xl mx-auto px-4">
+                                Fizika, matematika, ona tili, informatika, biologiya, kimyo, tarix, geografiya va boshqa fanlar bo'yicha professional taqdimotlar, referatlar va testlar
+                            </p>
+                            <button 
+                                onClick={() => navigateTo('showcase')}
+                                className="mt-6 px-6 md:px-8 py-3 md:py-4 rounded-xl text-white font-bold text-sm md:text-base transition-transform hover:scale-105 active:scale-95"
+                                style={{
+                                    backgroundColor: theme.accent,
+                                    boxShadow: `0 0 30px ${theme.accent}60`
+                                }}
+                            >
+                                Hujjatlarni Ko'rish
+                            </button>
+                        </div>
+                    </GlassCard>
+                </section>
+
                 {/* Features Grid */}
-                <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-24" aria-labelledby="features-heading">
+                <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 mb-12 md:mb-24" aria-labelledby="features-heading">
                     <h2 id="features-heading" className="sr-only">Asosiy Funksiyalar</h2>
                     
                     <GlassCard theme={theme} className="text-center group">
-                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative" style={{
+                        <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 rounded-2xl flex items-center justify-center relative" style={{
                             background: `linear-gradient(135deg, ${theme.accent}20, ${theme.accent}40)`,
                             boxShadow: `0 0 30px ${theme.accent}30`
                         }}>
-                            <Presentation size={40} style={{color: theme.accent}} aria-hidden="true"/>
+                            <Presentation size={32} className="md:hidden" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Presentation size={40} className="hidden md:block" style={{color: theme.accent}} aria-hidden="true"/>
                             <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{
                                 background: `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}60)`,
                                 boxShadow: `0 0 40px ${theme.accent}50`
                             }}></div>
                         </div>
-                        <h3 className="font-bold text-xl mb-3 text-white">Professional Taqdimotlar</h3>
-                        <p className="text-sm text-gray-300 leading-relaxed">6-20 slaydli taqdimotlar, 40+ shablon, rasmli dizayn, PDF yuklab olish</p>
+                        <h3 className="font-bold text-base md:text-xl mb-2 md:mb-3 text-white">Professional Taqdimotlar</h3>
+                        <p className="text-xs md:text-sm text-gray-300 leading-relaxed">6-20 slaydli taqdimotlar, 40+ shablon, rasmli dizayn</p>
                     </GlassCard>
                     
                     <GlassCard theme={theme} className="text-center group">
-                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative" style={{
+                        <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 rounded-2xl flex items-center justify-center relative" style={{
                             background: `linear-gradient(135deg, ${theme.accent}20, ${theme.accent}40)`,
                             boxShadow: `0 0 30px ${theme.accent}30`
                         }}>
-                            <Scroll size={40} style={{color: theme.accent}} aria-hidden="true"/>
+                            <Scroll size={32} className="md:hidden" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Scroll size={40} className="hidden md:block" style={{color: theme.accent}} aria-hidden="true"/>
                             <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{
                                 background: `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}60)`,
                                 boxShadow: `0 0 40px ${theme.accent}50`
                             }}></div>
                         </div>
-                        <h3 className="font-bold text-xl mb-3 text-white">Ilmiy Referatlar</h3>
-                        <p className="text-sm text-gray-300 leading-relaxed">To'liq strukturali 15 sahifali referatlar, barcha fanlar bo'yicha</p>
+                        <h3 className="font-bold text-base md:text-xl mb-2 md:mb-3 text-white">Ilmiy Referatlar</h3>
+                        <p className="text-xs md:text-sm text-gray-300 leading-relaxed">15 sahifali referatlar, barcha fanlar bo'yicha</p>
                     </GlassCard>
                     
                     <GlassCard theme={theme} className="text-center group">
-                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative" style={{
+                        <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 rounded-2xl flex items-center justify-center relative" style={{
                             background: `linear-gradient(135deg, ${theme.accent}20, ${theme.accent}40)`,
                             boxShadow: `0 0 30px ${theme.accent}30`
                         }}>
-                            <ClipboardList size={40} style={{color: theme.accent}} aria-hidden="true"/>
+                            <ClipboardList size={32} className="md:hidden" style={{color: theme.accent}} aria-hidden="true"/>
+                            <ClipboardList size={40} className="hidden md:block" style={{color: theme.accent}} aria-hidden="true"/>
                             <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{
                                 background: `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}60)`,
                                 boxShadow: `0 0 40px ${theme.accent}50`
                             }}></div>
                         </div>
-                        <h3 className="font-bold text-xl mb-3 text-white">Testlar Yaratish</h3>
-                        <p className="text-sm text-gray-300 leading-relaxed">10-50 savollik testlar, oson/o'rtacha/qiyin darajalar, javoblar bilan</p>
+                        <h3 className="font-bold text-base md:text-xl mb-2 md:mb-3 text-white">Testlar Yaratish</h3>
+                        <p className="text-xs md:text-sm text-gray-300 leading-relaxed">10-50 savollik testlar, javoblar bilan</p>
                     </GlassCard>
                     
                     <GlassCard theme={theme} className="text-center group">
-                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative" style={{
+                        <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 rounded-2xl flex items-center justify-center relative" style={{
                             background: `linear-gradient(135deg, ${theme.accent}20, ${theme.accent}40)`,
                             boxShadow: `0 0 30px ${theme.accent}30`
                         }}>
-                            <Grid3x3 size={40} style={{color: theme.accent}} aria-hidden="true"/>
+                            <Grid3x3 size={32} className="md:hidden" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Grid3x3 size={40} className="hidden md:block" style={{color: theme.accent}} aria-hidden="true"/>
                             <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{
                                 background: `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}60)`,
                                 boxShadow: `0 0 40px ${theme.accent}50`
                             }}></div>
                         </div>
-                        <h3 className="font-bold text-xl mb-3 text-white">Interaktiv Krosswordlar</h3>
-                        <p className="text-sm text-gray-300 leading-relaxed">5-30 so'zli krosswordlar, javoblar bilan, PDF format</p>
+                        <h3 className="font-bold text-base md:text-xl mb-2 md:mb-3 text-white">Interaktiv Krosswordlar</h3>
+                        <p className="text-xs md:text-sm text-gray-300 leading-relaxed">5-30 so'zli krosswordlar, PDF format</p>
                     </GlassCard>
                 </section>
 
                 {/* Key Features */}
-                <section className="grid md:grid-cols-3 gap-6 mb-16" aria-labelledby="benefits-heading">
+                <section className="grid md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-16" aria-labelledby="benefits-heading">
                     <h2 id="benefits-heading" className="sr-only">Afzalliklar</h2>
                     
                     <GlassCard theme={theme}>
                         <div className="flex items-start">
-                            <Sparkles size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Sparkles size={24} className="md:hidden mr-3 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Sparkles size={32} className="hidden md:block mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
                             <div>
-                                <h3 className="font-bold mb-2">Zamonaviy AI Texnologiyasi</h3>
-                                <p className="text-sm opacity-70">GPT asosidagi sun'iy intellekt modellari yordamida yuqori sifatli kontent avtomatik yaratish</p>
+                                <h3 className="font-bold text-sm md:text-base mb-1 md:mb-2">Zamonaviy AI Texnologiyasi</h3>
+                                <p className="text-xs md:text-sm opacity-70">GPT asosida yuqori sifatli kontent avtomatik yaratish</p>
                             </div>
                         </div>
                     </GlassCard>
                     
                     <GlassCard theme={theme}>
                         <div className="flex items-start">
-                            <Zap size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Zap size={24} className="md:hidden mr-3 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Zap size={32} className="hidden md:block mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
                             <div>
-                                <h3 className="font-bold mb-2">1 Daqiqada Tayyor</h3>
-                                <p className="text-sm opacity-70">Tez ishlash, avtomatik formatlash, PDF/PPTX yuklash. Vaqtingizni tejang!</p>
+                                <h3 className="font-bold text-sm md:text-base mb-1 md:mb-2">1 Daqiqada Tayyor</h3>
+                                <p className="text-xs md:text-sm opacity-70">Tez ishlash, PDF/PPTX yuklash. Vaqtingizni tejang!</p>
                             </div>
                         </div>
                     </GlassCard>
                     
                     <GlassCard theme={theme}>
                         <div className="flex items-start">
-                            <Globe size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Globe size={24} className="md:hidden mr-3 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
+                            <Globe size={32} className="hidden md:block mr-4 flex-shrink-0" style={{color: theme.accent}} aria-hidden="true"/>
                             <div>
-                                <h3 className="font-bold mb-2">Ko'p Tillar Qo'llab-quvvatlash</h3>
-                                <p className="text-sm opacity-70">O'zbek, Qoraqalpoq, Rus, Ingliz, Nemis, Fransuz, Turk tillarida hujjat yaratish</p>
+                                <h3 className="font-bold text-sm md:text-base mb-1 md:mb-2">Ko'p Tillar Qo'llab-quvvatlash</h3>
+                                <p className="text-xs md:text-sm opacity-70">O'zbek, Rus, Ingliz, Fransuz, Turk tillarida</p>
                             </div>
                         </div>
-                    </GlassCard>
-                </section>
-
-                {/* Showcase Section */}
-                <section className="mb-6" aria-labelledby="showcase-heading">
-                    <GlassCard theme={theme} className="text-center">
-                        <h2 id="showcase-heading" className="text-2xl font-bold mb-3">{formatNumber(documentsCount)}+ Tayyor Hujjatlar Kutubxonasi</h2>
-                        <p className="mb-4 opacity-80">Fizika, matematika, ona tili, informatika, biologiya, kimyo, tarix, geografiya va boshqa fanlar bo'yicha tayyor taqdimotlar, referatlar va testlar. Faqat 5,000 so'mdan!</p>
-                        <button 
-                            onClick={() => navigateTo('showcase')}
-                            className="px-8 py-3 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 active:scale-95"
-                            style={{backgroundColor: theme.accent}}
-                            aria-label="100,000+ tayyor hujjatlar kutubxonasini ko'rish"
-                        >
-                            Tayyor Hujjatlarni Ko'rish
-                        </button>
                     </GlassCard>
                 </section>
 
                 {/* CTA Section */}
                 <section className="mb-6" aria-labelledby="cta-heading">
                     <GlassCard theme={theme} className="text-center">
-                        <h2 id="cta-heading" className="text-3xl font-bold mb-4">Hoziroq O'z Hujjatingizni Yarating!</h2>
-                        <p className="mb-6 opacity-80">Telegram bot orqali 6 xonali kodni oling va bepul kirish imkoniyatidan foydalaning</p>
+                        <h2 id="cta-heading" className="text-xl md:text-3xl font-bold mb-3 md:mb-4 px-2">Hoziroq O'z Hujjatingizni Yarating!</h2>
+                        <p className="mb-4 md:mb-6 opacity-80 text-xs md:text-sm px-2">Telegram bot orqali 6 xonali kodni oling va bepul foydalaning</p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <a 
                                 href="https://t.me/taqdimot_robot?start=code" 
@@ -1559,6 +1589,67 @@ const YaratishScreen = ({ navigateTo, theme }) => {
         </div>
         {isPaymentModalOpen && <PaymentFlowModal theme={theme} onClose={() => setIsPaymentModalOpen(false)} />}
         </>
+    );
+};
+
+// Counter animatsiya komponenti
+const AnimatedCounter = ({ target, duration = 2000, theme }) => {
+    const [count, setCount] = useState(0);
+    const [hasAnimated, setHasAnimated] = useState(false);
+    const counterRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !hasAnimated) {
+                    setHasAnimated(true);
+                    const startTime = Date.now();
+                    const startValue = 0;
+                    const endValue = target;
+
+                    const animate = () => {
+                        const now = Date.now();
+                        const progress = Math.min((now - startTime) / duration, 1);
+                        
+                        // Easing function - ease out
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        const currentCount = Math.floor(startValue + (endValue - startValue) * easeOut);
+                        
+                        setCount(currentCount);
+
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        }
+                    };
+
+                    animate();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (counterRef.current) {
+            observer.observe(counterRef.current);
+        }
+
+        return () => {
+            if (counterRef.current) {
+                observer.unobserve(counterRef.current);
+            }
+        };
+    }, [target, duration, hasAnimated]);
+
+    const formatNumber = (num) => {
+        return num.toLocaleString('en-US');
+    };
+
+    return (
+        <span 
+            ref={counterRef}
+            className="font-extrabold text-6xl md:text-8xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent"
+        >
+            {formatNumber(count)}+
+        </span>
     );
 };
 
@@ -2291,9 +2382,40 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
         };
         fetchCount();
     }, []);
+    
+    // URL parametrdan qidiruv
+    useEffect(() => {
+        // URL'dan search parametrni olish
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchParam = urlParams.get('search');
+        
+        if (searchParam && searchParam.trim()) {
+            console.log('[DEBUG] URL parameter search:', searchParam);
+            setSearchQuery(searchParam);
+            // Avtomatik qidiruv
+            setIsLoading(true);
+            setHasSearched(true);
+            api.searchExternal(searchParam, null, 1, 10)
+                .then(results => {
+                    console.log('[DEBUG] Search results:', results?.length || 0);
+                    setDocs(results || []);
+                })
+                .catch(error => {
+                    console.error("URL search error:", error);
+                    setDocs([]);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
+        }
+    }, []); // Faqat birinchi render'da
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;
+        
+        // URL'ni update qilish (Google Bot uchun)
+        const newUrl = `${window.location.pathname}?search=${encodeURIComponent(searchQuery)}`;
+        window.history.pushState({}, '', newUrl);
         
         setIsLoading(true);
         setHasSearched(true);
@@ -2314,12 +2436,25 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
         }
     };
 
+    // Dynamic SEO
+    const pageTitle = searchQuery 
+        ? `${searchQuery} - Taqdimot, Referat, Test Yuklab Olish | Taqdimot App`
+        : `Barcha Hujjatlar - 100,000+ Taqdimot, Referat, Test | Taqdimot App`;
+    
+    const pageDescription = searchQuery
+        ? `${searchQuery} haqida tayyor taqdimotlar, referatlar, testlar va krosswordlar. Sun'iy intellekt bilan yaratilgan professional hujjatlar. Faqat 5000 so'mdan yuklab oling!`
+        : `100,000+ tayyor hujjatlar: taqdimotlar, referatlar, testlar va krosswordlar. Fizika, matematika, ona tili, informatika, biologiya, kimyo, tarix, geografiya, ingliz tili, adabiyot, astronomiya bo'yicha. Faqat 5000 so'mdan!`;
+    
+    const pageKeywords = searchQuery
+        ? `${searchQuery}, ${searchQuery} taqdimot, ${searchQuery} referat, ${searchQuery} test, ${searchQuery} krossword, tayyor ${searchQuery} hujjat, ${searchQuery} haqida, yuklab olish`
+        : `fizika taqdimot, matematika taqdimot, ona tili taqdimot, informatika taqdimot, biologiya taqdimot, kimyo taqdimot, tarix taqdimot, geografiya taqdimot, fizika referat, matematika referat, ona tili referat, taqdimot yuklab olish, referat yuklab olish, test yuklab olish, tayyor taqdimotlar, tayyor referatlar, sun'iy intellekt, AI taqdimot`;
+    
     return (
         <div className="animate-fade-in">
             <Helmet>
-                <title>Barcha Hujjatlar - 100,000+ Taqdimot, Referat, Test | Taqdimot App</title>
-                <meta name="description" content="100,000+ tayyor hujjatlar: taqdimotlar, referatlar, testlar va krosswordlar. Fizika, matematika, ona tili, informatika, biologiya, kimyo, tarix, geografiya, ingliz tili, adabiyot, astronomiya bo'yicha. Faqat 5000 so'mdan!" />
-                <meta name="keywords" content="fizika taqdimot, matematika taqdimot, ona tili taqdimot, informatika taqdimot, biologiya taqdimot, kimyo taqdimot, tarix taqdimot, geografiya taqdimot, fizika referat, matematika referat, ona tili referat, taqdimot yuklab olish, referat yuklab olish, test yuklab olish, tayyor taqdimotlar, tayyor referatlar, sun'iy intellekt, AI taqdimot" />
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <meta name="keywords" content={pageKeywords} />
             </Helmet>
 
             <header className="flex items-center mb-6">
