@@ -965,6 +965,7 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [shareModalData, setShareModalData] = useState(null);
+  const [deleteConfirmIndex, setDeleteConfirmIndex] = useState(null);
   const [filteredLocalDocs, setFilteredLocalDocs] = useState([]); // State for local filtered docs
   const [externalDocs, setExternalDocs] = useState([]); // State for external API results
   const [isExternalSearching, setIsExternalSearching] = useState(false); // Loading state for external search
@@ -1052,7 +1053,7 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
                         <button onClick={() => setShareModalData({ url: doc.downloadUrl, title: doc.title })} className="p-2 rounded-full hover:bg-white/20" style={{backgroundColor: theme.subtle}}>
                           <Share2 size={18} />
                         </button>
-                        <button onClick={() => onDelete(index)} className="p-2 rounded-full hover:bg-red-500/20" style={{backgroundColor: theme.subtle}}>
+                        <button onClick={() => setDeleteConfirmIndex(index)} className="p-2 rounded-full hover:bg-red-500/20" style={{backgroundColor: theme.subtle}}>
                           <Trash2 size={18} className="text-red-500" />
                         </button>
                       </div>
@@ -1133,7 +1134,7 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
                             <button onClick={() => setShareModalData({ url: doc.downloadUrl, title: doc.title })} className="p-2 rounded-full hover:bg-white/20" style={{backgroundColor: theme.subtle}}>
                                 <Share2 size={18} />
                             </button>
-                            <button onClick={() => onDelete(index)} className="p-2 rounded-full hover:bg-red-500/20" style={{backgroundColor: theme.subtle}}>
+                            <button onClick={() => setDeleteConfirmIndex(index)} className="p-2 rounded-full hover:bg-red-500/20" style={{backgroundColor: theme.subtle}}>
                                 <Trash2 size={18} className="text-red-500" />
                             </button>
                         </div>
@@ -1154,6 +1155,18 @@ const HujjatlarimScreen = ({ navigateTo, theme, allDocs, onDelete }) => {
         </div>
       )}
       {shareModalData && <ShareModal theme={theme} data={shareModalData} onClose={() => setShareModalData(null)} />}
+      {deleteConfirmIndex !== null && (
+        <ConfirmModal 
+          theme={theme}
+          title="Hujjatni o'chirish"
+          message="Haqiqatan ham bu hujjatni o'chirmoqchimisiz? Bu amalni qaytarib bo'lmaydi."
+          onConfirm={() => {
+            onDelete(deleteConfirmIndex);
+            setDeleteConfirmIndex(null);
+          }}
+          onCancel={() => setDeleteConfirmIndex(null)}
+        />
+      )}
     </div>
   );
 };
@@ -2230,6 +2243,11 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
         setHasSearched(true);
         try {
             const results = await api.searchExternal(searchQuery, null, 1, 10);
+            console.log('🔍 API RESPONSE:', results);
+            if (results && results.length > 0) {
+                console.log('📦 FIRST DOC:', results[0]);
+                console.log('📋 DOC KEYS:', Object.keys(results[0]));
+            }
             setDocs(results || []);
         } catch (error) {
             console.error("Qidiruv xatosi:", error);
@@ -2313,24 +2331,38 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                                     style={{color: 'inherit'}}
                                 >
                                     <div className="flex items-center mb-2">
-                                        {doc.type === 'Taqdimot' ? (
-                                            <Presentation size={20} className="mr-2 text-blue-600" />
-                                        ) : doc.type === 'Referat' ? (
-                                            <Scroll size={20} className="mr-2 text-green-600" />
-                                        ) : (doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') ? (
-                                            <FileText size={20} className="mr-2 text-pink-600" />
-                                        ) : doc.type === 'Test' ? (
-                                            <ClipboardList size={20} className="mr-2 text-orange-600" />
-                                        ) : doc.type === 'Krossword' ? (
-                                            <Grid3x3 size={20} className="mr-2 text-purple-600" />
-                                        ) : (
-                                            <FileText size={20} className="mr-2 text-gray-600" />
-                                        )}
+                                        {(() => {
+                                            // API'dan kelayotgan type'larni icon'larga map qilish
+                                            const type = doc.type?.toLowerCase();
+                                            
+                                            if (type === 'pptx' || type === 'ppsx' || type === 'taqdimot') {
+                                                return <Presentation size={20} className="mr-2 text-blue-600" />;
+                                            } else if (type === 'referat') {
+                                                return <Scroll size={20} className="mr-2 text-green-600" />;
+                                            } else if (type === 'docx' || type === 'mustaqil ish') {
+                                                return <FileText size={20} className="mr-2 text-pink-600" />;
+                                            } else if (type === 'test') {
+                                                return <ClipboardList size={20} className="mr-2 text-orange-600" />;
+                                            } else if (type === 'crossword' || type === 'krossword') {
+                                                return <Grid3x3 size={20} className="mr-2 text-purple-600" />;
+                                            } else {
+                                                // Default icon
+                                                return <FileText size={20} className="mr-2 text-gray-600" />;
+                                            }
+                                        })()}
                                         <h3 className="font-semibold text-lg hover:underline">{doc.text}</h3>
                                     </div>
                                     <div className="flex items-center gap-3 mt-2">
                                         <span className="text-sm px-3 py-1 rounded-full" style={{backgroundColor: theme.subtle}}>
-                                            {doc.type}
+                                            {(() => {
+                                                const type = doc.type?.toLowerCase();
+                                                if (type === 'pptx' || type === 'ppsx') return 'Taqdimot';
+                                                if (type === 'referat') return 'Referat';
+                                                if (type === 'docx') return 'Mustaqil ish';
+                                                if (type === 'test') return 'Test';
+                                                if (type === 'crossword') return 'Krossword';
+                                                return doc.type; // Fallback
+                                            })()}
                                         </span>
                                         <span className="text-lg font-bold" style={{color: theme.accent}}>
                                             5,000 so'm
@@ -2523,67 +2555,95 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
 
             <GlassCard theme={theme} className="mb-6">
                 <div className="flex items-start mb-6">
-                    {doc.type === 'Taqdimot' ? (
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
-                            background: 'linear-gradient(135deg, #3b82f620, #3b82f640)',
-                            boxShadow: '0 0 30px #3b82f630'
-                        }}>
-                            <Presentation size={32} className="text-blue-600" />
-                        </div>
-                    ) : doc.type === 'Referat' ? (
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
-                            background: 'linear-gradient(135deg, #10b98120, #10b98140)',
-                            boxShadow: '0 0 30px #10b98130'
-                        }}>
-                            <Scroll size={32} className="text-green-600" />
-                        </div>
-                    ) : (doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') ? (
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
-                            background: 'linear-gradient(135deg, #ec489820, #ec489840)',
-                            boxShadow: '0 0 30px #ec489830'
-                        }}>
-                            <FileText size={32} className="text-pink-600" />
-                        </div>
-                    ) : doc.type === 'Test' ? (
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
-                            background: 'linear-gradient(135deg, #f9731620, #f9731640)',
-                            boxShadow: '0 0 30px #f9731630'
-                        }}>
-                            <ClipboardList size={32} className="text-orange-600" />
-                        </div>
-                    ) : doc.type === 'Krossword' ? (
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
-                            background: 'linear-gradient(135deg, #a855f720, #a855f740)',
-                            boxShadow: '0 0 30px #a855f730'
-                        }}>
-                            <Grid3x3 size={32} className="text-purple-600" />
-                        </div>
-                    ) : (
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
-                            background: 'linear-gradient(135deg, #6b728020, #6b728040)',
-                            boxShadow: '0 0 30px #6b728030'
-                        }}>
-                            <FileText size={32} className="text-gray-600" />
-                        </div>
-                    )}
+                    {(() => {
+                        const type = doc.type?.toLowerCase();
+                        
+                        if (type === 'pptx' || type === 'ppsx' || type === 'taqdimot') {
+                            return (
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                                    background: 'linear-gradient(135deg, #3b82f620, #3b82f640)',
+                                    boxShadow: '0 0 30px #3b82f630'
+                                }}>
+                                    <Presentation size={32} className="text-blue-600" />
+                                </div>
+                            );
+                        } else if (type === 'referat') {
+                            return (
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                                    background: 'linear-gradient(135deg, #10b98120, #10b98140)',
+                                    boxShadow: '0 0 30px #10b98130'
+                                }}>
+                                    <Scroll size={32} className="text-green-600" />
+                                </div>
+                            );
+                        } else if (type === 'docx' || type === 'mustaqil ish') {
+                            return (
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                                    background: 'linear-gradient(135deg, #ec489820, #ec489840)',
+                                    boxShadow: '0 0 30px #ec489830'
+                                }}>
+                                    <FileText size={32} className="text-pink-600" />
+                                </div>
+                            );
+                        } else if (type === 'test') {
+                            return (
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                                    background: 'linear-gradient(135deg, #f9731620, #f9731640)',
+                                    boxShadow: '0 0 30px #f9731630'
+                                }}>
+                                    <ClipboardList size={32} className="text-orange-600" />
+                                </div>
+                            );
+                        } else if (type === 'crossword' || type === 'krossword') {
+                            return (
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                                    background: 'linear-gradient(135deg, #a855f720, #a855f740)',
+                                    boxShadow: '0 0 30px #a855f730'
+                                }}>
+                                    <Grid3x3 size={32} className="text-purple-600" />
+                                </div>
+                            );
+                        } else {
+                            return (
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mr-4" style={{
+                                    background: 'linear-gradient(135deg, #6b728020, #6b728040)',
+                                    boxShadow: '0 0 30px #6b728030'
+                                }}>
+                                    <FileText size={32} className="text-gray-600" />
+                                </div>
+                            );
+                        }
+                    })()}
                     
                     <div className="flex-1">
                         <h2 className="text-2xl font-bold mb-2">{doc.text}</h2>
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-3">
                                 <span className="text-sm px-3 py-1 rounded-full font-semibold" style={{backgroundColor: theme.subtle}}>
-                                    {doc.type}
+                                    {(() => {
+                                        const type = doc.type?.toLowerCase();
+                                        if (type === 'pptx' || type === 'ppsx') return 'Taqdimot';
+                                        if (type === 'referat') return 'Referat';
+                                        if (type === 'docx') return 'Mustaqil ish';
+                                        if (type === 'test') return 'Test';
+                                        if (type === 'crossword') return 'Krossword';
+                                        return doc.type;
+                                    })()}
                                 </span>
                                 <span className="text-2xl font-bold" style={{color: theme.accent}}>
                                     5,000 so'm
                                 </span>
                             </div>
                             <p className="text-sm opacity-70">
-                                {doc.type === 'Taqdimot' && '📊 PowerPoint taqdimoti (PPTX) - 6-20 slaydli professional taqdimot'}
-                                {doc.type === 'Referat' && '📝 Word referati (DOCX) - 10-15 sahifali ilmiy ish'}
-                                {(doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') && '📄 Word mustaqil ish (DOCX) - 5-10 sahifali amaliy topshiriqlar'}
-                                {doc.type === 'Test' && '📋 PDF test (PDF) - 10-50 savollik test javoblar bilan'}
-                                {doc.type === 'Krossword' && '🔲 PDF krossword (PDF) - 5-30 so\'zli krossword javoblar bilan'}
+                                {(() => {
+                                    const type = doc.type?.toLowerCase();
+                                    if (type === 'pptx' || type === 'ppsx') return '📊 PowerPoint taqdimoti (PPTX) - 6-20 slaydli professional taqdimot';
+                                    if (type === 'referat') return '📝 Word referati (DOCX) - 10-15 sahifali ilmiy ish';
+                                    if (type === 'docx') return '📄 Word mustaqil ish (DOCX) - 5-10 sahifali amaliy topshiriqlar';
+                                    if (type === 'test') return '📋 PDF test (PDF) - 10-50 savollik test javoblar bilan';
+                                    if (type === 'crossword') return '🔲 PDF krossword (PDF) - 5-30 so\'zli krossword javoblar bilan';
+                                    return '';
+                                })()}
                             </p>
                         </div>
                     </div>
@@ -2592,88 +2652,128 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
                 <div className="border-t pt-6 mb-6" style={{borderColor: theme.subtle}}>
                     <h3 className="font-bold text-lg mb-3">Hujjat haqida:</h3>
                     <p className="text-base opacity-90 leading-relaxed mb-4">
-                        <strong>{doc.text}</strong> mavzusida sun'iy intellekt (AI) yordamida yaratilgan professional {doc.type.toLowerCase()}.
-                        {doc.type === 'Taqdimot' && ' 6-20 slaydli rasmli taqdimot PowerPoint formatida.'}
-                        {doc.type === 'Referat' && ' 10-15 sahifali to\'liq ilmiy referat Word formatida.'}
-                        {(doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') && ' 5-10 sahifali amaliy topshiriqlar bilan mustaqil ish Word formatida.'}
-                        {doc.type === 'Test' && ' 10-50 savollik test javoblar bilan PDF formatida.'}
-                        {doc.type === 'Krossword' && ' 5-30 so\'zli interaktiv krossword javoblar bilan PDF formatida.'}
+                        <strong>{doc.text}</strong> mavzusida sun'iy intellekt (AI) yordamida yaratilgan professional hujjat.
+                        {(() => {
+                            const type = doc.type?.toLowerCase();
+                            if (type === 'pptx' || type === 'ppsx') return ' 6-20 slaydli rasmli taqdimot PowerPoint formatida.';
+                            if (type === 'referat') return ' 10-15 sahifali to\'liq ilmiy referat Word formatida.';
+                            if (type === 'docx') return ' 5-10 sahifali amaliy topshiriqlar bilan mustaqil ish Word formatida.';
+                            if (type === 'test') return ' 10-50 savollik test javoblar bilan PDF formatida.';
+                            if (type === 'crossword') return ' 5-30 so\'zli interaktiv krossword javoblar bilan PDF formatida.';
+                            return '';
+                        })()}
                     </p>
                     
                     <div className="grid md:grid-cols-2 gap-4 mt-4">
                         <div className="p-4 rounded-lg" style={{backgroundColor: theme.subtle}}>
                             <h4 className="font-semibold mb-2">✨ Xususiyatlar:</h4>
                             <ul className="text-sm space-y-1 opacity-80">
-                                {doc.type === 'Taqdimot' && (
-                                    <>
-                                        <li>• 6-20 professional slaydlar</li>
-                                        <li>• Rasmli dizayn va animatsiyalar</li>
-                                        <li>• 40+ zamonaviy shablonlar</li>
-                                        <li>• PowerPoint va Google Slides'da ochiladi</li>
-                                    </>
-                                )}
-                                {doc.type === 'Referat' && (
-                                    <>
-                                        <li>• 10-15 sahifa ilmiy matn</li>
-                                        <li>• Kirish, asosiy qism, xulosa</li>
-                                        <li>• Bibliografiya va manbalar</li>
-                                        <li>• Word va Google Docs'da ochiladi</li>
-                                    </>
-                                )}
-                                {(doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') && (
-                                    <>
-                                        <li>• 5-10 sahifa amaliy topshiriqlar</li>
-                                        <li>• Nazariy va amaliy qismlar</li>
-                                        <li>• Mashqlar va misollar</li>
-                                        <li>• Word va Google Docs'da ochiladi</li>
-                                    </>
-                                )}
-                                {doc.type === 'Test' && (
-                                    <>
-                                        <li>• 10-50 savol (4 variant)</li>
-                                        <li>• Oson, o\'rtacha, qiyin darajalar</li>
-                                        <li>• To\'g\'ri javoblar bilan</li>
-                                        <li>• PDF formatda, chop qilish uchun tayyor</li>
-                                    </>
-                                )}
-                                {doc.type === 'Krossword' && (
-                                    <>
-                                        <li>• 5-30 so\'z interaktiv krossword</li>
-                                        <li>• Gorizontal va vertikal savollar</li>
-                                        <li>• Javoblar kiritilgan</li>
-                                        <li>• PDF formatda, chop qilish mumkin</li>
-                                    </>
-                                )}
+                                {(() => {
+                                    const type = doc.type?.toLowerCase();
+                                    if (type === 'pptx' || type === 'ppsx') {
+                                        return (
+                                            <>
+                                                <li>• 6-20 professional slaydlar</li>
+                                                <li>• Rasmli dizayn va animatsiyalar</li>
+                                                <li>• 40+ zamonaviy shablonlar</li>
+                                                <li>• PowerPoint va Google Slides'da ochiladi</li>
+                                            </>
+                                        );
+                                    } else if (type === 'referat') {
+                                        return (
+                                            <>
+                                                <li>• 10-15 sahifa ilmiy matn</li>
+                                                <li>• Kirish, asosiy qism, xulosa</li>
+                                                <li>• Bibliografiya va manbalar</li>
+                                                <li>• Word va Google Docs'da ochiladi</li>
+                                            </>
+                                        );
+                                    } else if (type === 'docx') {
+                                        return (
+                                            <>
+                                                <li>• 5-10 sahifa amaliy topshiriqlar</li>
+                                                <li>• Nazariy va amaliy qismlar</li>
+                                                <li>• Mashqlar va misollar</li>
+                                                <li>• Word va Google Docs'da ochiladi</li>
+                                            </>
+                                        );
+                                    } else if (type === 'test') {
+                                        return (
+                                            <>
+                                                <li>• 10-50 savol (4 variant)</li>
+                                                <li>• Oson, o\'rtacha, qiyin darajalar</li>
+                                                <li>• To\'g\'ri javoblar bilan</li>
+                                                <li>• PDF formatda, chop qilish uchun tayyor</li>
+                                            </>
+                                        );
+                                    } else if (type === 'crossword') {
+                                        return (
+                                            <>
+                                                <li>• 5-30 so\'z interaktiv krossword</li>
+                                                <li>• Gorizontal va vertikal savollar</li>
+                                                <li>• Javoblar kiritilgan</li>
+                                                <li>• PDF formatda, chop qilish mumkin</li>
+                                            </>
+                                        );
+                                    }
+                                    return null;
+                                })()}
                             </ul>
                         </div>
                         
                         <div className="p-4 rounded-lg" style={{backgroundColor: theme.subtle}}>
                             <h4 className="font-semibold mb-2">📦 Format va Hajm:</h4>
                             <ul className="text-sm space-y-1 opacity-80">
-                                {doc.type === 'Taqdimot' && (
-                                    <>
-                                        <li>• <strong>Format:</strong> PPTX (PowerPoint)</li>
-                                        <li>• <strong>Hajm:</strong> 6-20 slayd</li>
-                                        <li>• <strong>O\'lcham:</strong> 2-5 MB</li>
-                                        <li>• <strong>Tahrirlash:</strong> To\'liq mumkin</li>
-                                    </>
-                                )}
-                                {(doc.type === 'Referat' || doc.type === 'Mustaqil ish' || doc.type === 'Mustaqil Ish') && (
-                                    <>
-                                        <li>• <strong>Format:</strong> DOCX (Microsoft Word)</li>
-                                        <li>• <strong>Hajm:</strong> {doc.type === 'Referat' ? '10-15' : '5-10'} sahifa</li>
-                                        <li>• <strong>O\'lcham:</strong> 500KB - 2MB</li>
-                                        <li>• <strong>Tahrirlash:</strong> To\'liq mumkin</li>
-                                    </>
-                                )}
-                                {(doc.type === 'Test' || doc.type === 'Krossword') && (
-                                    <>
-                                        <li>• <strong>Format:</strong> PDF</li>
-                                        <li>• <strong>Hajm:</strong> {doc.type === 'Test' ? '10-50 savol' : '5-30 so\'z'}</li>
-                                        <li>• <strong>O\'lcham:</strong> 200KB - 1MB</li>
-                                        <li>• <strong>Chop qilish:</strong> Yuqori sifatda</li>
-                                    </>
-                                )}
+                                {(() => {
+                                    const type = doc.type?.toLowerCase();
+                                    if (type === 'pptx' || type === 'ppsx') {
+                                        return (
+                                            <>
+                                                <li>• <strong>Format:</strong> PPTX (PowerPoint)</li>
+                                                <li>• <strong>Hajm:</strong> 6-20 slayd</li>
+                                                <li>• <strong>O\'lcham:</strong> 2-5 MB</li>
+                                                <li>• <strong>Tahrirlash:</strong> To\'liq mumkin</li>
+                                            </>
+                                        );
+                                    } else if (type === 'referat') {
+                                        return (
+                                            <>
+                                                <li>• <strong>Format:</strong> DOCX (Microsoft Word)</li>
+                                                <li>• <strong>Hajm:</strong> 10-15 sahifa</li>
+                                                <li>• <strong>O\'lcham:</strong> 500KB - 2MB</li>
+                                                <li>• <strong>Tahrirlash:</strong> To\'liq mumkin</li>
+                                            </>
+                                        );
+                                    } else if (type === 'docx') {
+                                        return (
+                                            <>
+                                                <li>• <strong>Format:</strong> DOCX (Microsoft Word)</li>
+                                                <li>• <strong>Hajm:</strong> 5-10 sahifa</li>
+                                                <li>• <strong>O\'lcham:</strong> 500KB - 2MB</li>
+                                                <li>• <strong>Tahrirlash:</strong> To\'liq mumkin</li>
+                                            </>
+                                        );
+                                    } else if (type === 'test') {
+                                        return (
+                                            <>
+                                                <li>• <strong>Format:</strong> PDF</li>
+                                                <li>• <strong>Hajm:</strong> 10-50 savol</li>
+                                                <li>• <strong>O\'lcham:</strong> 200KB - 1MB</li>
+                                                <li>• <strong>Chop qilish:</strong> Yuqori sifatda</li>
+                                            </>
+                                        );
+                                    } else if (type === 'crossword') {
+                                        return (
+                                            <>
+                                                <li>• <strong>Format:</strong> PDF</li>
+                                                <li>• <strong>Hajm:</strong> 5-30 so\'z</li>
+                                                <li>• <strong>O\'lcham:</strong> 200KB - 1MB</li>
+                                                <li>• <strong>Chop qilish:</strong> Yuqori sifatda</li>
+                                            </>
+                                        );
+                                    }
+                                    return null;
+                                })()}
                             </ul>
                         </div>
                     </div>
@@ -2735,6 +2835,48 @@ const FaqScreen = ({ navigateTo, theme }) => {
             <header className="flex items-center mb-6"><button onClick={() => navigateTo('profil')} className="p-2 mr-4 rounded-full" style={{backgroundColor: theme.subtle}}><ArrowLeft size={20} /></button><h1 className="text-2xl font-bold">Ko'p Beriladigan Savollar</h1></header>
             <div className="space-y-4">{faqData.map((item, index) => (<GlassCard key={index} theme={theme}><div onClick={() => toggleFaq(index)} className="flex justify-between items-center cursor-pointer"><h3 className="text-md font-semibold pr-4">{item.q}</h3><ChevronDown size={20} className={`transform transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`} style={{color: theme.accent}}/></div>{openIndex === index && (<p className="opacity-80 mt-3 pt-3 border-t" style={{borderColor: theme.subtle}}>{item.a}</p>)}
             </GlassCard>))}
+            </div>
+        </div>
+    );
+};
+
+// Tasdiqlovchi Modal Oynasi
+const ConfirmModal = ({ theme, title, message, onConfirm, onCancel }) => {
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 animate-fade-in-fast" onClick={onCancel}>
+            <div 
+                className="relative w-11/12 max-w-md p-6 rounded-2xl backdrop-blur-xl border shadow-2xl" 
+                onClick={e => e.stopPropagation()}
+                style={{ 
+                    backgroundColor: theme.card,
+                    borderColor: theme.subtle
+                }}
+            > 
+                <button 
+                    onClick={onCancel} 
+                    className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg" 
+                    style={{backgroundColor: theme.accent}}
+                >
+                    <X size={20} />
+                </button>
+                <h2 className="text-xl font-bold mb-4 text-center" style={{color: theme.text}}>{title}</h2>
+                <p className="text-base opacity-80 mb-6 text-center" style={{color: theme.text}}>{message}</p>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={onCancel} 
+                        className="flex-1 py-3 rounded-xl font-bold text-base transition-transform hover:scale-[1.02] active:scale-95"
+                        style={{backgroundColor: theme.subtle, color: theme.text}}
+                    >
+                        Yo'q
+                    </button>
+                    <button 
+                        onClick={onConfirm} 
+                        className="flex-1 py-3 rounded-xl text-white font-bold text-base transition-transform hover:scale-[1.02] active:scale-95"
+                        style={{backgroundColor: '#ef4444'}}
+                    >
+                        Ha
+                    </button>
+                </div>
             </div>
         </div>
     );
