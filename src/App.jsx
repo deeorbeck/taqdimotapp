@@ -620,60 +620,106 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
             
             <div className="max-w-6xl w-full">
                 {/* Hero Section */}
-                <header className="text-center mb-16">
+                <header className="text-center mb-24">
                     <img 
                         src="/images/logo.png" 
                         alt="Taqdimot App - Sun'iy intellekt bilan taqdimot va hujjat yaratish dasturi logotipi" 
-                        className="w-32 h-32 rounded-full mx-auto mb-6 border-4 animate-float" 
-                        style={{borderColor: theme.accent}}
-                        width="128"
-                        height="128"
+                        className="w-36 h-36 rounded-full mx-auto mb-8 border-4 animate-float" 
+                        style={{
+                            borderColor: theme.accent,
+                            boxShadow: `0 0 60px ${theme.accent}80`
+                        }}
+                        width="144"
+                        height="144"
                     />
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                        Taqdimot App - AI bilan Hujjat Yaratish
+                    <h1 className="text-6xl md:text-7xl font-extrabold mb-6 text-white leading-tight">
+                        Taqdimot App <br/>
+                        <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                            AI bilan Hujjat Yaratish
+                        </span>
                     </h1>
-                    <p className="text-xl md:text-2xl mb-4 opacity-90">
+                    <p className="text-xl md:text-2xl mb-6 text-gray-200 font-medium max-w-3xl mx-auto">
                         Sun'iy intellekt yordamida 1 daqiqada professional taqdimot, referat, test va krossword yarating
                     </p>
-                    <p className="text-lg opacity-70 mb-8 max-w-2xl mx-auto">
+                    <p className="text-base md:text-lg text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
                         AI texnologiyasi bilan sifatli kontent, 40+ professional shablon, rasmli taqdimotlar va 7+ til qo'llab-quvvatlash. O'zbek, rus va ingliz tillarida tayyor hujjatlar.
                     </p>
                     <button 
                         onClick={onGetStarted}
-                        className="px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 active:scale-95 shadow-lg"
-                        style={{backgroundColor: theme.accent}}
+                        className="px-10 py-5 rounded-2xl text-white font-bold text-xl transition-all duration-300 hover:scale-110 active:scale-95 relative overflow-hidden group"
+                        style={{
+                            backgroundColor: theme.accent,
+                            boxShadow: `0 0 40px ${theme.accent}80, 0 0 80px ${theme.accent}40`
+                        }}
                         aria-label="Taqdimot App'ga kirish va hujjat yaratishni boshlash"
                     >
-                        Bepul Boshlash <ChevronsRight className="inline ml-2" aria-hidden="true" />
+                        <span className="relative z-10">Bepul Boshlash <ChevronsRight className="inline ml-2" aria-hidden="true" /></span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </button>
                 </header>
 
                 {/* Features Grid */}
-                <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16" aria-labelledby="features-heading">
+                <section className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-24" aria-labelledby="features-heading">
                     <h2 id="features-heading" className="sr-only">Asosiy Funksiyalar</h2>
                     
-                    <GlassCard theme={theme} className="text-center">
-                        <Presentation size={48} className="mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
-                        <h3 className="font-bold text-lg mb-2">Professional Taqdimotlar</h3>
-                        <p className="text-sm opacity-70">6-20 slaydli taqdimotlar, 40+ shablon, rasmli dizayn, PDF yuklab olish</p>
+                    <GlassCard theme={theme} className="text-center group">
+                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative" style={{
+                            background: `linear-gradient(135deg, ${theme.accent}20, ${theme.accent}40)`,
+                            boxShadow: `0 0 30px ${theme.accent}30`
+                        }}>
+                            <Presentation size={40} style={{color: theme.accent}} aria-hidden="true"/>
+                            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{
+                                background: `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}60)`,
+                                boxShadow: `0 0 40px ${theme.accent}50`
+                            }}></div>
+                        </div>
+                        <h3 className="font-bold text-xl mb-3 text-white">Professional Taqdimotlar</h3>
+                        <p className="text-sm text-gray-300 leading-relaxed">6-20 slaydli taqdimotlar, 40+ shablon, rasmli dizayn, PDF yuklab olish</p>
                     </GlassCard>
                     
-                    <GlassCard theme={theme} className="text-center">
-                        <Scroll size={48} className="mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
-                        <h3 className="font-bold text-lg mb-2">Ilmiy Referatlar</h3>
-                        <p className="text-sm opacity-70">To'liq strukturali 15 sahifali referatlar, barcha fanlar bo'yicha</p>
+                    <GlassCard theme={theme} className="text-center group">
+                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative" style={{
+                            background: `linear-gradient(135deg, ${theme.accent}20, ${theme.accent}40)`,
+                            boxShadow: `0 0 30px ${theme.accent}30`
+                        }}>
+                            <Scroll size={40} style={{color: theme.accent}} aria-hidden="true"/>
+                            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{
+                                background: `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}60)`,
+                                boxShadow: `0 0 40px ${theme.accent}50`
+                            }}></div>
+                        </div>
+                        <h3 className="font-bold text-xl mb-3 text-white">Ilmiy Referatlar</h3>
+                        <p className="text-sm text-gray-300 leading-relaxed">To'liq strukturali 15 sahifali referatlar, barcha fanlar bo'yicha</p>
                     </GlassCard>
                     
-                    <GlassCard theme={theme} className="text-center">
-                        <ClipboardList size={48} className="mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
-                        <h3 className="font-bold text-lg mb-2">Testlar Yaratish</h3>
-                        <p className="text-sm opacity-70">10-50 savollik testlar, oson/o'rtacha/qiyin darajalar, javoblar bilan</p>
+                    <GlassCard theme={theme} className="text-center group">
+                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative" style={{
+                            background: `linear-gradient(135deg, ${theme.accent}20, ${theme.accent}40)`,
+                            boxShadow: `0 0 30px ${theme.accent}30`
+                        }}>
+                            <ClipboardList size={40} style={{color: theme.accent}} aria-hidden="true"/>
+                            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{
+                                background: `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}60)`,
+                                boxShadow: `0 0 40px ${theme.accent}50`
+                            }}></div>
+                        </div>
+                        <h3 className="font-bold text-xl mb-3 text-white">Testlar Yaratish</h3>
+                        <p className="text-sm text-gray-300 leading-relaxed">10-50 savollik testlar, oson/o'rtacha/qiyin darajalar, javoblar bilan</p>
                     </GlassCard>
                     
-                    <GlassCard theme={theme} className="text-center">
-                        <Grid3x3 size={48} className="mx-auto mb-4" style={{color: theme.accent}} aria-hidden="true"/>
-                        <h3 className="font-bold text-lg mb-2">Interaktiv Krosswordlar</h3>
-                        <p className="text-sm opacity-70">5-30 so'zli krosswordlar, javoblar bilan, PDF format</p>
+                    <GlassCard theme={theme} className="text-center group">
+                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center relative" style={{
+                            background: `linear-gradient(135deg, ${theme.accent}20, ${theme.accent}40)`,
+                            boxShadow: `0 0 30px ${theme.accent}30`
+                        }}>
+                            <Grid3x3 size={40} style={{color: theme.accent}} aria-hidden="true"/>
+                            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{
+                                background: `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}60)`,
+                                boxShadow: `0 0 40px ${theme.accent}50`
+                            }}></div>
+                        </div>
+                        <h3 className="font-bold text-xl mb-3 text-white">Interaktiv Krosswordlar</h3>
+                        <p className="text-sm text-gray-300 leading-relaxed">5-30 so'zli krosswordlar, javoblar bilan, PDF format</p>
                     </GlassCard>
                 </section>
 
@@ -1401,7 +1447,18 @@ const YaratishScreen = ({ navigateTo, theme }) => {
     );
 };
 
-const GlassCard = ({ children, theme, className = '' }) => (<div className={`p-4 rounded-2xl backdrop-blur-lg border ${className}`} style={{ backgroundColor: theme.card, borderColor: theme.subtle }}>{children}</div>);
+const GlassCard = ({ children, theme, className = '' }) => (
+  <div 
+    className={`p-6 md:p-8 rounded-3xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${className}`} 
+    style={{ 
+      backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)'
+    }}
+  >
+    {children}
+  </div>
+);
 
 // "Taqdimot Muharriri" ekrani
 const TaqdimotMuharririScreen = ({ navigateTo, theme, settings }) => {
