@@ -442,12 +442,23 @@ function MainApp() {
     }
   }, [allDocs]);
 
+  // Login qilgandan keyin avtomatik redirect
   useEffect(() => {
-    if (isLoggedIn && (activeScreen === 'muharrir' || activeScreen === 'status') && !presentationSettings && !generationTask) {
+    if (isLoggedIn) {
+      // Agar login yoki landing sahifasida bo'lsa, yaratish sahifasiga o'tkazish
+      if (activeScreen === 'login' || activeScreen === 'landing') {
+        console.log("[LOG: MainApp] Login muvaffaqiyatli. Yaratish sahifasiga yo'naltirilmoqda.");
+        window.history.pushState({ screen: 'yaratish' }, '', '/yaratish');
+        setActiveScreen('yaratish');
+      }
+      // Muharrir/Status sahifalariga to'g'ridan-to'g'ri kirishga ruxsat yo'q
+      if ((activeScreen === 'muharrir' || activeScreen === 'status') && !presentationSettings && !generationTask) {
         console.warn("[LOG: MainApp] Muharrir/Status sahifasiga to'g'ridan-to'g'ri kirishga urinish. Hujjatlarim sahifasiga yo'naltirilmoqda.");
+        window.history.pushState({ screen: 'hujjatlarim' }, '', '/hujjatlarim');
         setActiveScreen('hujjatlarim');
+      }
     }
-  }, [activeScreen, presentationSettings, generationTask, isLoggedIn]);
+  }, [isLoggedIn, activeScreen, presentationSettings, generationTask]);
   
   useEffect(() => {
     if (notification.message) {
@@ -756,6 +767,10 @@ const LoginScreen = ({ theme, navigateTo }) => {
         setError('');
         try {
             await login(code);
+            // Muvaffaqiyatli login - fayl yaratish sahifasiga o'tish
+            if (navigateTo) {
+                navigateTo('yaratish');
+            }
         } catch (err) {
             setError(err.message || 'Kod xato yoki foydalanuvchi topilmadi.');
             console.error(err);
