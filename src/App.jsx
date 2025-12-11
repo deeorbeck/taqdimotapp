@@ -2420,29 +2420,13 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
             return;
         }
 
-        // Agar faqat documentId bor bo'lsa, API'dan yuklash (Google'dan kelganlar uchun)
-        const fetchDocument = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                // searchExternal API bilan text qidirish (ID emas!)
-                // Bu Google'dan kelgan userlar uchun - hali ishlamaydi, backend API kerak
-                const results = await api.searchExternal(documentId, null, 1, 1);
-                if (results && results.length > 0) {
-                    setDoc(results[0]);
-                } else {
-                    setError("Hujjat topilmadi. Iltimos Barcha Hujjatlar sahifasidan qidiring.");
-                }
-            } catch (error) {
-                console.error("Hujjat yuklashda xatolik:", error);
-                setError("Hujjat yuklashda xatolik yuz berdi");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
+        // Agar faqat documentId bor bo'lsa (to'g'ridan-to'g'ri URL), Showcase'ga redirect
         if (documentId && !documentData) {
-            fetchDocument();
+            // Backend API yo'q, shuning uchun Showcase'ga yo'naltirish
+            console.log('[DEBUG] No documentData, redirecting to Showcase');
+            setIsLoading(false);
+            navigateTo('showcase');
+            return;
         }
     }, [documentId, documentData]);
 
