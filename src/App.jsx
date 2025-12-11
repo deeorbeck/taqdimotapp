@@ -388,11 +388,18 @@ function MainApp() {
   // URL'dan initial screen va document ID olish
   const getInitialScreen = () => {
     const path = window.location.pathname;
+    console.log('[DEBUG] getInitialScreen path:', path);
+    
     if (path === '/login') return 'login';
     if (path === '/showcase') return 'showcase';
     if (path === '/landing' || path === '/') return 'landing';
+    
     // Document detail page: /d/:id
-    if (path.startsWith('/d/')) return 'document';
+    if (path.startsWith('/d/')) {
+      console.log('[DEBUG] Document page detected:', path);
+      return 'document';
+    }
+    
     if (isLoggedIn) {
       if (path === '/hujjatlarim') return 'hujjatlarim';
       if (path === '/yaratish') return 'yaratish';
@@ -401,21 +408,32 @@ function MainApp() {
       if (path === '/faq') return 'faq';
       return 'hujjatlarim';
     }
+    
+    console.log('[DEBUG] Returning landing by default');
     return 'landing';
   };
   
   const getDocumentIdFromUrl = () => {
     const path = window.location.pathname;
+    console.log('[DEBUG] getDocumentIdFromUrl path:', path);
     if (path.startsWith('/d/')) {
       const docId = path.split('/')[2];
+      console.log('[DEBUG] Extracted docId:', docId);
       return docId || null;
     }
+    console.log('[DEBUG] No docId found');
     return null;
   };
   
-  const [activeScreen, setActiveScreen] = useState(getInitialScreen());
+  const initialScreen = getInitialScreen();
+  console.log('[DEBUG] Initial screen:', initialScreen);
+  
+  const [activeScreen, setActiveScreen] = useState(initialScreen);
   const [documentId, setDocumentId] = useState(getDocumentIdFromUrl());
   const [documentData, setDocumentData] = useState(null);
+  
+  console.log('[DEBUG] activeScreen state:', activeScreen);
+  console.log('[DEBUG] documentId state:', documentId);
   const [presentationSettings, setPresentationSettings] = useState(null);
   const [generationTask, setGenerationTask] = useState(null);
   const [allDocs, setAllDocs] = useState(() => {
@@ -581,7 +599,12 @@ function MainApp() {
       case 'showcase':
         return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
       case 'document':
-        if (!documentId && !documentData) return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
+        console.log('[DEBUG] Document case - documentId:', documentId, 'documentData:', documentData);
+        if (!documentId && !documentData) {
+          console.log('[DEBUG] No documentId or documentData, showing Showcase');
+          return <ShowcaseScreen navigateTo={navigateTo} theme={theme} />;
+        }
+        console.log('[DEBUG] Rendering DocumentDetailScreen');
         return <DocumentDetailScreen documentId={documentId} documentData={documentData} navigateTo={navigateTo} theme={theme} />;
       case 'landing':
         return <LandingPage theme={theme} onGetStarted={() => navigateTo('login')} navigateTo={navigateTo} />;
@@ -597,9 +620,14 @@ function MainApp() {
     }
   };
   
+  console.log('[DEBUG] isLoading:', isLoading);
+  
   if (isLoading) {
+      console.log('[DEBUG] Showing FullScreenLoader');
       return <FullScreenLoader theme={theme} />;
   }
+  
+  console.log('[DEBUG] About to call renderScreen()');
 
   return (
     <NotificationContext.Provider value={{ showNotification }}>
@@ -618,19 +646,19 @@ function MainApp() {
                 </div>
             )}
             <div className="relative z-10 h-full flex flex-col">
-                {activeScreen === 'showcase' || activeScreen === 'landing' || activeScreen === 'login' ? (
-                    <main className="flex-grow p-4 pt-14 pb-24">
+                {activeScreen === 'showcase' || activeScreen === 'landing' || activeScreen === 'login' || activeScreen === 'document' ? (
+                    <main className="flex-grow p-4 pt-18 pb-24">
                         {renderScreen()}
                     </main>
                 ) : isLoggedIn ? (
                 <>
-                    <main className="flex-grow p-4 pt-14 pb-24">
+                    <main className="flex-grow p-4 pt-18 pb-24">
                     {renderScreen()}
                     </main>
                     {activeScreen !== 'support' && activeScreen !== 'faq' && activeScreen !== 'status' && <BottomNav activeScreen={activeScreen} navigateTo={navigateTo} theme={theme} />}
                 </>
                 ) : (
-                    <main className="flex-grow p-4 pt-14 pb-24">
+                    <main className="flex-grow p-4 pt-18 pb-24">
                         <LandingPage theme={theme} onGetStarted={() => navigateTo('login')} navigateTo={navigateTo} />
                     </main>
                 )}
@@ -2268,9 +2296,22 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold mb-4">Topildi: {docs.length} ta hujjat</h3>
                     {docs.map((doc) => (
-                        <GlassCard key={doc.id} theme={theme} className="cursor-pointer hover:scale-[1.01] transition-all">
+                        <GlassCard key={doc.id} theme={theme} className="hover:scale-[1.01] transition-all">
                             <div className="flex justify-between items-start">
-                                <div className="flex-1" onClick={() => navigateTo('document', { id: doc.id, doc: doc })}>
+                                <a 
+                                    href={`/d/${doc.id}`}
+                                    onClick={(e) => {
+                                        // Ctrl+click yoki middle click bo'lsa, yangi tab'da ochilsin
+                                        if (e.ctrlKey || e.metaKey || e.button === 1) {
+                                            return; // Browser default behavior (new tab)
+                                        }
+                                        // Regular click - same tab
+                                        e.preventDefault();
+                                        navigateTo('document', { id: doc.id, doc: doc });
+                                    }}
+                                    className="flex-1 cursor-pointer no-underline"
+                                    style={{color: 'inherit'}}
+                                >
                                     <div className="flex items-center mb-2">
                                         {doc.type === 'Taqdimot' ? (
                                             <Presentation size={20} className="mr-2 text-blue-600" />
@@ -2291,7 +2332,7 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
                                             5,000 so'm
                                         </span>
                                     </div>
-                                </div>
+                                </a>
                                 <a 
                                     href={`https://t.me/taqdimot_robot?start=id_${doc.id}`}
                                     target="_blank"
