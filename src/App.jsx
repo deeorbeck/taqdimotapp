@@ -780,7 +780,7 @@ const LandingPage = ({ theme, onGetStarted, navigateTo }) => {
                                     <Loader className="animate-spin" size={48} style={{color: theme.accent}} />
                                 </div>
                             ) : (
-                                <AnimatedCounter target={documentsCount} duration={2500} theme={theme} />
+                                <AnimatedCounter target={documentsCount} duration={5000} theme={theme} />
                             )}
                             <p className="text-sm md:text-base text-gray-300 mt-6 max-w-2xl mx-auto px-4">
                                 Fizika, matematika, ona tili, informatika, biologiya, kimyo, tarix, geografiya va boshqa fanlar bo'yicha professional taqdimotlar, referatlar va testlar
