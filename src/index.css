@@ -12,6 +12,8 @@
 .animation-delay-2000 { animation-delay: -2s; }
 .animation-delay-4000 { animation-delay: -4s; }
 .animation-delay-6000 { animation-delay: -6s; }
+.animation-delay-8000 { animation-delay: -8s; }
+.animation-delay-10000 { animation-delay: -10s; }
 
  @keyframes fade-in { 
   from { opacity: 0; transform: translateY(10px); } 
@@ -36,3 +38,9 @@
   50% { transform: translateX(100%); }
 }
 .animate-pulse-fast { animation: pulse-fast 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+ @keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+.animate-float { animation: float 3s ease-in-out infinite; }

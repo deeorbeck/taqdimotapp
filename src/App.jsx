@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
-import { ChevronsRight, FileText, User, Search, Plus, ArrowLeft, RefreshCw, Moon, Sun, X, CheckCircle, Edit2, ChevronDown, Loader, UploadCloud, File as FileIcon, Trash2, Download, Share2, XCircle, Copy, Presentation, Scroll, ClipboardList, Grid3x3 } from 'lucide-react';
+import { ChevronsRight, FileText, User, Search, Plus, ArrowLeft, RefreshCw, Moon, Sun, X, CheckCircle, Edit2, ChevronDown, Loader, UploadCloud, File as FileIcon, Trash2, Download, Share2, XCircle, Copy, Presentation, Scroll, ClipboardList, Grid3x3, Sparkles, Zap, Shield, Globe } from 'lucide-react';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 // --- API Configuration ---
 const API_BASE_URL = 'https://api.tm.ismailov.uz'; // ✅ Production URL
@@ -372,15 +373,18 @@ export default function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
+    </HelmetProvider>
   );
 }
 
 function MainApp() {
   const { isLoggedIn, logout, isLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [showLandingPage, setShowLandingPage] = useState(true);
   const [activeScreen, setActiveScreen] = useState('hujjatlarim');
   const [presentationSettings, setPresentationSettings] = useState(null);
   const [generationTask, setGenerationTask] = useState(null);
@@ -513,7 +517,11 @@ function MainApp() {
             )}
             <div className="relative z-10 h-full flex flex-col">
                 {!isLoggedIn ? (
-                <LoginScreen theme={theme} />
+                    showLandingPage ? (
+                        <LandingPage theme={theme} onGetStarted={() => setShowLandingPage(false)} />
+                    ) : (
+                        <LoginScreen theme={theme} />
+                    )
                 ) : (
                 <>
                     <main className="flex-grow p-4 pb-24">
@@ -527,6 +535,136 @@ function MainApp() {
     </NotificationContext.Provider>
   );
 }
+
+// Landing Page ekrani
+const LandingPage = ({ theme, onGetStarted }) => {
+    return (
+        <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 animate-fade-in">
+            <Helmet>
+                <title>Taqdimot App - Sun'iy Intellekt bilan Taqdimot Yaratish</title>
+                <meta name="description" content="Sun'iy intellekt yordamida bir necha daqiqada professional taqdimot, referat, test va krossword yarating. 40+ shablon, rasmli taqdimotlar." />
+            </Helmet>
+            
+            <div className="max-w-6xl w-full">
+                {/* Hero Section */}
+                <div className="text-center mb-16">
+                    <img src="/images/logo.png" alt="Taqdimot App Logo" className="w-32 h-32 rounded-full mx-auto mb-6 border-4 animate-float" style={{borderColor: theme.accent}}/>
+                    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                        Taqdimot App
+                    </h1>
+                    <p className="text-xl md:text-2xl mb-4 opacity-90">
+                        Sun'iy Intellekt bilan Professional Hujjatlar Yaratish
+                    </p>
+                    <p className="text-lg opacity-70 mb-8 max-w-2xl mx-auto">
+                        Bir necha daqiqada taqdimot, referat, test va krossword yarating. 
+                        AI yordamida sifatli kontent, 40+ professional shablon va ko'p tillar qo'llab-quvvatlash.
+                    </p>
+                    <button 
+                        onClick={onGetStarted}
+                        className="px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 active:scale-95 shadow-lg"
+                        style={{backgroundColor: theme.accent}}
+                    >
+                        Boshlash <ChevronsRight className="inline ml-2" />
+                    </button>
+                </div>
+
+                {/* Features Grid */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                    <GlassCard theme={theme} className="text-center">
+                        <Presentation size={48} className="mx-auto mb-4" style={{color: theme.accent}}/>
+                        <h3 className="font-bold text-lg mb-2">Taqdimot</h3>
+                        <p className="text-sm opacity-70">6-20 slaydli professional taqdimotlar, 40+ shablon</p>
+                    </GlassCard>
+                    
+                    <GlassCard theme={theme} className="text-center">
+                        <Scroll size={48} className="mx-auto mb-4" style={{color: theme.accent}}/>
+                        <h3 className="font-bold text-lg mb-2">Referat</h3>
+                        <p className="text-sm opacity-70">To'liq strukturali 15 sahifali ilmiy referatlar</p>
+                    </GlassCard>
+                    
+                    <GlassCard theme={theme} className="text-center">
+                        <ClipboardList size={48} className="mx-auto mb-4" style={{color: theme.accent}}/>
+                        <h3 className="font-bold text-lg mb-2">Test</h3>
+                        <p className="text-sm opacity-70">10-50 savollik testlar, 3 xil qiyinlik darajasi</p>
+                    </GlassCard>
+                    
+                    <GlassCard theme={theme} className="text-center">
+                        <Grid3x3 size={48} className="mx-auto mb-4" style={{color: theme.accent}}/>
+                        <h3 className="font-bold text-lg mb-2">Krossword</h3>
+                        <p className="text-sm opacity-70">5-30 so'zli interaktiv krosswordlar</p>
+                    </GlassCard>
+                </div>
+
+                {/* Key Features */}
+                <div className="grid md:grid-cols-3 gap-6 mb-16">
+                    <GlassCard theme={theme}>
+                        <div className="flex items-start">
+                            <Sparkles size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}}/>
+                            <div>
+                                <h3 className="font-bold mb-2">AI Texnologiyasi</h3>
+                                <p className="text-sm opacity-70">Eng zamonaviy sun'iy intellekt modellari yordamida sifatli kontent yaratish</p>
+                            </div>
+                        </div>
+                    </GlassCard>
+                    
+                    <GlassCard theme={theme}>
+                        <div className="flex items-start">
+                            <Zap size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}}/>
+                            <div>
+                                <h3 className="font-bold mb-2">Tezkor Ishlash</h3>
+                                <p className="text-sm opacity-70">Bir necha daqiqada tayyor hujjat, PDF yuklab olish</p>
+                            </div>
+                        </div>
+                    </GlassCard>
+                    
+                    <GlassCard theme={theme}>
+                        <div className="flex items-start">
+                            <Globe size={32} className="mr-4 flex-shrink-0" style={{color: theme.accent}}/>
+                            <div>
+                                <h3 className="font-bold mb-2">Ko'p Tillar</h3>
+                                <p className="text-sm opacity-70">O'zbek, rus, ingliz va boshqa 7+ til qo'llab-quvvatlash</p>
+                            </div>
+                        </div>
+                    </GlassCard>
+                </div>
+
+                {/* CTA Section */}
+                <GlassCard theme={theme} className="text-center">
+                    <h2 className="text-3xl font-bold mb-4">Tayyor hujjatlarni hoziroq yarating!</h2>
+                    <p className="mb-6 opacity-80">Telegram bot orqali kod olib ilovaga kiring</p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a 
+                            href="https://t.me/taqdimot_robot?start=code" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="px-6 py-3 rounded-xl text-white font-bold transition-transform hover:scale-105"
+                            style={{backgroundColor: theme.accent}}
+                        >
+                            Kodni Olish
+                        </a>
+                        <button 
+                            onClick={onGetStarted}
+                            className="px-6 py-3 rounded-xl font-bold transition-transform hover:scale-105 border-2"
+                            style={{borderColor: theme.accent, color: theme.accent}}
+                        >
+                            Kirish
+                        </button>
+                    </div>
+                </GlassCard>
+
+                {/* Footer */}
+                <div className="text-center mt-12 opacity-60 text-sm">
+                    <p>© 2025 Taqdimot App. Barcha huquqlar himoyalangan.</p>
+                    <p className="mt-2">
+                        <a href="https://t.me/taqdimot_robot" target="_blank" rel="noopener noreferrer" className="hover:opacity-100">
+                            Telegram Bot
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // Login ekrani
 const LoginScreen = ({ theme }) => {

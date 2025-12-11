@@ -1,0 +1,32 @@
+# robots.txt - Taqdimot App
+
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Disallow private/authenticated areas (not needed for SPA but good practice)
+Disallow: /api/
+Disallow: /private/
+
+# Sitemap location
+Sitemap: https://taqdimot.ismailov.uz/sitemap.xml
+
+# Crawl-delay to be nice to servers (optional)
+Crawl-delay: 1
+
+# Specific bot rules
+User-agent: Googlebot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Block bad bots (optional)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
