@@ -2243,11 +2243,6 @@ const ShowcaseScreen = ({ navigateTo, theme }) => {
         setHasSearched(true);
         try {
             const results = await api.searchExternal(searchQuery, null, 1, 10);
-            console.log('🔍 API RESPONSE:', results);
-            if (results && results.length > 0) {
-                console.log('📦 FIRST DOC:', results[0]);
-                console.log('📋 DOC KEYS:', Object.keys(results[0]));
-            }
             setDocs(results || []);
         } catch (error) {
             console.error("Qidiruv xatosi:", error);
