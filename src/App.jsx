@@ -442,14 +442,14 @@ function MainApp() {
     }
   }, [allDocs]);
 
-  // Login qilgandan keyin avtomatik redirect
+  // Login qilgandan keyin avtomatik redirect (faqat login sahifasida)
   useEffect(() => {
     if (isLoggedIn) {
-      // Agar login yoki landing sahifasida bo'lsa, yaratish sahifasiga o'tkazish
-      if (activeScreen === 'login' || activeScreen === 'landing') {
-        console.log("[LOG: MainApp] Login muvaffaqiyatli. Yaratish sahifasiga yo'naltirilmoqda.");
-        window.history.pushState({ screen: 'yaratish' }, '', '/yaratish');
-        setActiveScreen('yaratish');
+      // Faqat login sahifasida bo'lsa, hujjatlarim sahifasiga o'tkazish
+      if (activeScreen === 'login') {
+        console.log("[LOG: MainApp] Login muvaffaqiyatli. Hujjatlarim sahifasiga yo'naltirilmoqda.");
+        window.history.pushState({ screen: 'hujjatlarim' }, '', '/hujjatlarim');
+        setActiveScreen('hujjatlarim');
       }
       // Muharrir/Status sahifalariga to'g'ridan-to'g'ri kirishga ruxsat yo'q
       if ((activeScreen === 'muharrir' || activeScreen === 'status') && !presentationSettings && !generationTask) {
@@ -767,10 +767,8 @@ const LoginScreen = ({ theme, navigateTo }) => {
         setError('');
         try {
             await login(code);
-            // Muvaffaqiyatli login - fayl yaratish sahifasiga o'tish
-            if (navigateTo) {
-                navigateTo('yaratish');
-            }
+            // Muvaffaqiyatli login - MainApp useEffect avtomatik hujjatlarim'ga yo'naltiradi
+            // navigateTo() ni chaqirish shart emas
         } catch (err) {
             setError(err.message || 'Kod xato yoki foydalanuvchi topilmadi.');
             console.error(err);
