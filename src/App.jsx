@@ -2417,18 +2417,38 @@ const DocumentDetailScreen = ({ documentId, documentData, navigateTo, theme }) =
         if (documentData) {
             setDoc(documentData);
             setIsLoading(false);
+            // Cache'ga saqlash
+            try {
+                localStorage.setItem(`doc_${documentData.id}`, JSON.stringify(documentData));
+                console.log('[DEBUG] Document cached:', documentData.id);
+            } catch (e) {
+                console.error('Cache error:', e);
+            }
             return;
         }
 
-        // Agar faqat documentId bor bo'lsa (to'g'ridan-to'g'ri URL), Showcase'ga redirect
+        // Agar faqat documentId bor bo'lsa (to'g'ridan-to'g'ri URL)
         if (documentId && !documentData) {
-            // Backend API yo'q, shuning uchun Showcase'ga yo'naltirish
-            console.log('[DEBUG] No documentData, redirecting to Showcase');
+            // 1. Cache'dan o'qib ko'ramiz
+            try {
+                const cachedDoc = localStorage.getItem(`doc_${documentId}`);
+                if (cachedDoc) {
+                    console.log('[DEBUG] Document found in cache:', documentId);
+                    setDoc(JSON.parse(cachedDoc));
+                    setIsLoading(false);
+                    return;
+                }
+            } catch (e) {
+                console.error('Cache read error:', e);
+            }
+            
+            // 2. Cache'da yo'q bo'lsa, Showcase'ga redirect
+            console.log('[DEBUG] No cache, redirecting to Showcase');
             setIsLoading(false);
             navigateTo('showcase');
             return;
         }
-    }, [documentId, documentData]);
+    }, [documentId, documentData, navigateTo]);
 
     if (isLoading) {
         return (
