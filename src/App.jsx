@@ -647,18 +647,18 @@ function MainApp() {
             )}
             <div className="relative z-10 h-full flex flex-col">
                 {activeScreen === 'showcase' || activeScreen === 'landing' || activeScreen === 'login' || activeScreen === 'document' ? (
-                    <main className="flex-grow p-4 pt-18 pb-24">
+                    <main className="flex-grow p-4 pt-20 pb-24">
                         {renderScreen()}
                     </main>
                 ) : isLoggedIn ? (
                 <>
-                    <main className="flex-grow p-4 pt-18 pb-24">
+                    <main className="flex-grow p-4 pt-20 pb-24">
                     {renderScreen()}
                     </main>
                     {activeScreen !== 'support' && activeScreen !== 'faq' && activeScreen !== 'status' && <BottomNav activeScreen={activeScreen} navigateTo={navigateTo} theme={theme} />}
                 </>
                 ) : (
-                    <main className="flex-grow p-4 pt-18 pb-24">
+                    <main className="flex-grow p-4 pt-20 pb-24">
                         <LandingPage theme={theme} onGetStarted={() => navigateTo('login')} navigateTo={navigateTo} />
                     </main>
                 )}
